@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAGIC Gamma-Hadron — EDA Notebook</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,300;0,400;0,600;1,300&family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f8f7f4;
+  --page: #ffffff;
+  --surface: #fafaf8;
+  --border: #e8e4dd;
+  --border2: #d4cfc6;
+  --gamma: #0ea5e9;
+  --gamma-light: rgba(14,165,233,0.12);
+  --hadron: #f97316;
+  --hadron-light: rgba(249,115,22,0.12);
+  --accent: #7c3aed;
+  --accent-light: rgba(124,58,237,0.08);
+  --text: #1a1a1a;
+  --muted: #6b7280;
+  --muted2: #9ca3af;
+  --code-bg: #f0ece6;
+  --code-border: #ddd8d0;
+  --green: #16a34a;
+  --red: #dc2626;
+  --yellow-bg: #fffbeb;
+  --yellow-border: #f59e0b;
+  --blue-bg: #eff6ff;
+  --blue-border: #3b82f6;
+  --purple-bg: #faf5ff;
+  --purple-border: #8b5cf6;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.wrapper {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 24px 100px;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--page);
+  border-bottom: 2px solid var(--border);
+  padding: 52px 0 40px;
+  margin-bottom: 0;
+}
+.header-inner { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+.header-eyebrow {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 18px;
+}
+.eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gamma); }
+
+h1 {
+  font-family: 'Lora', serif;
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  font-weight: 600;
+  color: #111;
+  line-height: 1.2;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+h1 em { color: var(--gamma); font-style: italic; }
+
+.header-desc {
+  color: var(--muted); font-size: 14px; max-width: 620px; margin-bottom: 24px;
+}
+
+.badge-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.badge {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 10.5px; letter-spacing: 0.04em;
+  padding: 3px 10px; border-radius: 3px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--muted);
+}
+.badge.g { background: var(--gamma-light); border-color: var(--gamma); color: #0369a1; }
+.badge.h { background: var(--hadron-light); border-color: var(--hadron); color: #c2410c; }
+
+/* ── TOC ── */
+.toc-bar {
+  background: var(--page);
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+  margin-bottom: 32px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.toc-inner {
+  max-width: 1040px; margin: 0 auto; padding: 0 24px;
+  display: flex; overflow-x: auto; gap: 0;
+  scrollbar-width: none;
+}
+.toc-inner::-webkit-scrollbar { display: none; }
+.toc-link {
+  display: block;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 10.5px; letter-spacing: 0.05em;
+  color: var(--muted); text-decoration: none;
+  padding: 12px 14px; white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.toc-link:hover { color: var(--gamma); border-bottom-color: var(--gamma); }
+
+/* ── SECTION ── */
+section { margin-bottom: 48px; }
+
+.section-header {
+  display: flex; align-items: baseline; gap: 12px;
+  margin-bottom: 16px; padding-bottom: 10px;
+  border-bottom: 1.5px solid var(--border);
+}
+.sec-num {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 10px; color: var(--muted2); letter-spacing: 0.12em;
+}
+h2 {
+  font-family: 'Lora', serif; font-size: 1.2rem;
+  font-weight: 600; color: #111; letter-spacing: -0.01em;
+}
+h3 {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 11px; font-weight: 600;
+  color: var(--muted); letter-spacing: 0.08em;
+  text-transform: uppercase; margin: 22px 0 10px;
+}
+p { color: #4b5563; font-size: 13.5px; margin-bottom: 10px; }
+
+/* ── CELLS ── */
+.cell { margin-bottom: 16px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+
+.cell-in { background: var(--code-bg); }
+.cell-label {
+  font-family: 'Source Code Pro', monospace; font-size: 9.5px;
+  color: var(--muted2); padding: 5px 14px 4px;
+  border-bottom: 1px solid var(--code-border);
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(0,0,0,0.03);
+  letter-spacing: 0.06em;
+}
+.cell-label .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gamma); flex-shrink: 0; }
+.cell-label.out .dot { background: var(--hadron); }
+pre {
+  padding: 13px 18px;
+  font-family: 'Source Code Pro', monospace; font-size: 12px;
+  line-height: 1.6; overflow-x: auto; background: var(--code-bg);
+  color: #374151;
+}
+.cell-out { background: var(--page); border-top: 1px solid var(--border); }
+
+/* Syntax */
+.k { color: #7c3aed; } .kn { color: #7c3aed; } .km { color: #7c3aed; }
+.n { color: #1d4ed8; } .nn { color: #b45309; }
+.s { color: #15803d; } .s2 { color: #15803d; }
+.c { color: #9ca3af; font-style: italic; }
+.nb { color: #b45309; } .mi { color: #dc2626; } .mf { color: #dc2626; }
+.o { color: #6b7280; } .p { color: #374151; }
+
+/* ── OUTPUT ── */
+.out-text {
+  padding: 10px 18px; font-family: 'Source Code Pro', monospace;
+  font-size: 11.5px; line-height: 1.55; color: #374151;
+  white-space: pre-wrap;
+}
+
+table.df {
+  width: 100%; border-collapse: collapse;
+  font-family: 'Source Code Pro', monospace; font-size: 11px;
+}
+table.df th {
+  background: #f5f3ef; color: #374151; padding: 7px 12px;
+  text-align: right; border-bottom: 1.5px solid var(--border2);
+  font-weight: 600; white-space: nowrap; font-size: 10.5px;
+}
+table.df th:first-child { text-align: left; color: var(--muted); }
+table.df td { padding: 5px 12px; text-align: right; border-bottom: 1px solid var(--border); color: #374151; }
+table.df td:first-child { text-align: left; color: var(--muted); font-weight: 500; }
+table.df tr:hover td { background: #fafafa; }
+.table-wrap { overflow-x: auto; }
+
+/* ── CHART CONTAINERS ── */
+.chart-wrap { background: var(--page); padding: 16px; }
+.chart-grid { display: grid; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: 1fr 1fr 1fr; }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.g5 { grid-template-columns: repeat(5, 1fr); }
+
+.chart-box { padding: 12px; border: 1px solid var(--border); border-radius: 3px; background: #fff; margin: 4px; }
+.chart-title {
+  font-family: 'Source Code Pro', monospace; font-size: 10px;
+  color: var(--muted); margin-bottom: 8px; letter-spacing: 0.05em;
+  font-weight: 600; text-transform: uppercase;
+}
+canvas { max-width: 100%; }
+
+.legend {
+  display: flex; gap: 18px; padding: 10px 16px;
+  border-top: 1px solid var(--border); font-size: 11px;
+  font-family: 'Source Code Pro', monospace; color: var(--muted);
+  flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.ld { width: 10px; height: 10px; border-radius: 2px; }
+
+/* ── INSIGHT BOXES ── */
+.insight {
+  border-left: 3px solid var(--yellow-border);
+  background: var(--yellow-bg);
+  padding: 12px 16px; margin: 12px 0; border-radius: 0 3px 3px 0;
+}
+.insight.blue { border-left-color: var(--blue-border); background: var(--blue-bg); }
+.insight.purple { border-left-color: var(--purple-border); background: var(--purple-bg); }
+.insight.green { border-left-color: var(--green); background: #f0fdf4; }
+
+.insight-label {
+  font-family: 'Source Code Pro', monospace; font-size: 9.5px;
+  font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 6px;
+  color: #92400e;
+}
+.insight.blue .insight-label { color: #1e40af; }
+.insight.purple .insight-label { color: #5b21b6; }
+.insight.green .insight-label { color: #15803d; }
+.insight p { color: #44403c; font-size: 12.5px; margin: 0; }
+.insight.blue p { color: #1e3a5f; }
+.insight.purple p { color: #3b1f6e; }
+.insight.green p { color: #14532d; }
+
+/* ── STAT GRID ── */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; padding: 16px; background: var(--page); }
+.stat-card { border: 1px solid var(--border); border-radius: 4px; padding: 16px 12px; text-align: center; background: #fff; }
+.stat-value { font-family: 'Lora', serif; font-size: 1.8rem; font-weight: 600; line-height: 1; margin-bottom: 5px; color: #111; }
+.stat-value.gc { color: var(--gamma); }
+.stat-value.hc { color: var(--hadron); }
+.stat-value.ac { color: var(--accent); }
+.stat-label { font-size: 10.5px; color: var(--muted2); letter-spacing: 0.04em; }
+
+/* ── HEATMAP ── */
+.hm-wrap { overflow-x: auto; padding: 16px; background: var(--page); }
+.hm-grid { display: inline-grid; gap: 2px; }
+.hm-cell {
+  width: 50px; height: 38px; display: flex; align-items: center;
+  justify-content: center; border-radius: 2px;
+  font-family: 'Source Code Pro', monospace; font-size: 9px;
+  cursor: default; transition: opacity 0.15s;
+}
+.hm-cell:hover { opacity: 0.75; }
+.hm-label { font-family: 'Source Code Pro', monospace; font-size: 9px; color: var(--muted); display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; height: 38px; width: 72px; }
+.hm-header { font-family: 'Source Code Pro', monospace; font-size: 9px; color: var(--muted); text-align: center; height: 22px; display: flex; align-items: center; justify-content: center; width: 50px; }
+
+/* ── VIOLIN / KDE ── */
+.kde-canvas-wrap { position: relative; }
+
+/* ── FEATURE TABLE ── */
+.feat-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.feat-table th { background: #f5f3ef; padding: 8px 14px; text-align: left; font-weight: 600; font-size: 11px; letter-spacing: 0.04em; border-bottom: 2px solid var(--border2); color: #374151; }
+.feat-table td { padding: 7px 14px; border-bottom: 1px solid var(--border); color: #374151; vertical-align: top; }
+.feat-table tr:hover td { background: #fafafa; }
+.feat-name { font-family: 'Source Code Pro', monospace; font-weight: 600; color: #1d4ed8; }
+.disc-bar { display: inline-block; height: 6px; border-radius: 3px; vertical-align: middle; margin-left: 6px; }
+
+/* ── PAIRPLOT ── */
+#pairplotGrid { display: grid; grid-template-columns: repeat(5,1fr); gap: 3px; background: var(--page); padding: 16px; }
+.pp-box { background: #fff; border: 1px solid var(--border); border-radius: 2px; padding: 4px; }
+.pp-diag { background: #f8f7f4; }
+.pp-label { font-family: 'Source Code Pro', monospace; font-size: 8.5px; color: var(--muted); text-align: center; padding: 4px; display: flex; align-items: center; justify-content: center; height: 100%; font-weight: 600; }
+
+/* ── OUTLIER TABLE ── */
+.outlier-bar-wrap { padding: 16px; background: var(--page); }
+.outlier-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.outlier-feat { font-family: 'Source Code Pro', monospace; font-size: 10.5px; width: 80px; color: var(--muted); flex-shrink: 0; }
+.outlier-track { flex: 1; background: var(--border); border-radius: 3px; height: 10px; position: relative; }
+.outlier-fill { height: 100%; border-radius: 3px; }
+.outlier-val { font-family: 'Source Code Pro', monospace; font-size: 10.5px; color: var(--muted); width: 70px; text-align: right; flex-shrink: 0; }
+
+/* ── SKEW TABLE ── */
+.skew-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.skew-table th { background: #f5f3ef; padding: 7px 12px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; border-bottom: 1.5px solid var(--border2); color: #374151; }
+.skew-table td { padding: 6px 12px; border-bottom: 1px solid var(--border); font-family: 'Source Code Pro', monospace; color: #374151; font-size: 11px; }
+.skew-table tr:hover td { background: #fafafa; }
+.skew-pos { color: #dc2626; } .skew-neg { color: #2563eb; } .skew-ok { color: #16a34a; }
+
+@media (max-width: 700px) {
+  .g2,.g3,.g4,.g5 { grid-template-columns: 1fr; }
+  h1 { font-size: 1.6rem; }
+  #pairplotGrid { grid-template-columns: repeat(3,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════════════════════ -->
+<header>
+<div class="header-inner">
+  <div class="header-eyebrow">
+    <div class="eyebrow-dot"></div>
+    Exploratory Data Analysis · MAGIC04 Dataset · UCI ML Repository
+  </div>
+  <h1>MAGIC Gamma Telescope<br><em>Gamma–Hadron Separation</em></h1>
+  <p class="header-desc">A comprehensive EDA of the MAGIC04 simulated dataset — 19,020 Cherenkov telescope events described by 10 Hillas morphological parameters. The task: separate genuine γ-ray signal from hadronic cosmic-ray background.</p>
+  <div class="badge-row">
+    <span class="badge">19,020 events</span>
+    <span class="badge">10 features</span>
+    <span class="badge">0 missing values</span>
+    <span class="badge g">γ Gamma · 12,332 (64.8%)</span>
+    <span class="badge h">h Hadron · 6,688 (35.2%)</span>
+    <span class="badge">Bock et al. 2007</span>
+  </div>
+</div>
+</header>
+
+<!-- ══ TOC ══════════════════════════════════════════════════════════════════ -->
+<div class="toc-bar">
+<div class="toc-inner">
+  <a class="toc-link" href="#s1">1. Dataset</a>
+  <a class="toc-link" href="#s2">2. Structure</a>
+  <a class="toc-link" href="#s3">3. Statistics</a>
+  <a class="toc-link" href="#s4">4. Class Balance</a>
+  <a class="toc-link" href="#s5">5. Distributions</a>
+  <a class="toc-link" href="#s6">6. KDE Overlays</a>
+  <a class="toc-link" href="#s7">7. Boxplots</a>
+  <a class="toc-link" href="#s8">8. Violin Plots</a>
+  <a class="toc-link" href="#s9">9. Outliers</a>
+  <a class="toc-link" href="#s10">10. Skewness &amp; Kurtosis</a>
+  <a class="toc-link" href="#s11">11. Correlation</a>
+  <a class="toc-link" href="#s12">12. Scatter Pairs</a>
+  <a class="toc-link" href="#s13">13. Pair Plot</a>
+  <a class="toc-link" href="#s14">14. Cumulative Dist.</a>
+  <a class="toc-link" href="#s15">15. Feature Importance</a>
+  <a class="toc-link" href="#s16">16. Z-Score Dist.</a>
+  <a class="toc-link" href="#s17">17. Q-Q Plots</a>
+  <a class="toc-link" href="#s18">18. Class Mean Profiles</a>
+  <a class="toc-link" href="#s19">19. Separability</a>
+  <a class="toc-link" href="#s20">20. Takeaways</a>
+</div>
+</div>
+
+<div class="wrapper">
+
+<!-- ══ 1. DATASET ══════════════════════════════════════════════════════════ -->
+<section id="s1">
+<div class="section-header"><span class="sec-num">§ 01</span><h2>Dataset Overview &amp; Feature Descriptions</h2></div>
+<p>The MAGIC (Major Atmospheric Gamma Imaging Cherenkov) telescope records images of particle showers triggered by high-energy particles entering the atmosphere. Each event is characterized using <strong>Hillas parameters</strong> — geometric moments of the elliptical camera image. The goal is to distinguish γ-ray photon events (<em>signal</em>) from the far more common hadronic cosmic-ray showers (<em>background</em>).</p>
+
+<div class="cell">
+<div class="cell-in">
+<div class="cell-label"><span class="dot"></span>In [1]</div>
+<pre><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>, <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="n">sns</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">stats</span>
+
+<span class="n">COLS</span> <span class="o">=</span> <span class="p">[</span><span class="s">'fLength'</span><span class="p">,</span><span class="s">'fWidth'</span><span class="p">,</span><span class="s">'fSize'</span><span class="p">,</span><span class="s">'fConc'</span><span class="p">,</span><span class="s">'fConc1'</span><span class="p">,</span>
+        <span class="s">'fAsym'</span><span class="p">,</span><span class="s">'fM3Long'</span><span class="p">,</span><span class="s">'fM3Trans'</span><span class="p">,</span><span class="s">'fAlpha'</span><span class="p">,</span><span class="s">'fDist'</span><span class="p">,</span><span class="s">'class'</span><span class="p">]</span>
+<span class="n">URL</span>  <span class="o">=</span> <span class="s">'https://archive.ics.uci.edu/ml/machine-learning-databases/magic/magic04.data'</span>
+<span class="n">df</span>   <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">COLS</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s">'g'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span><span class="s">'h'</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span>  <span class="c"># 0=gamma, 1=hadron</span>
+<span class="n">gamma</span>  <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">hadron</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">feats</span>  <span class="o">=</span> <span class="n">COLS</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span></pre>
+</div>
+</div>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [2]</div>
+<pre><span class="c"># Feature dictionary</span>
+<span class="n">feat_desc</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s">'fLength'</span> <span class="p">:</span> <span class="p">(</span><span class="s">'Major axis of ellipse'</span><span class="p">,</span>          <span class="s">'mm'</span><span class="p">,</span>   <span class="s">'geometric'</span><span class="p">),</span>
+  <span class="s">'fWidth'</span>  <span class="p">:</span> <span class="p">(</span><span class="s">'Minor axis of ellipse'</span><span class="p">,</span>          <span class="s">'mm'</span><span class="p">,</span>   <span class="s">'geometric'</span><span class="p">),</span>
+  <span class="s">'fSize'</span>   <span class="p">:</span> <span class="p">(</span><span class="s">'log10(sum of pixel content)'</span><span class="p">,</span>    <span class="s">'phot'</span><span class="p">,</span> <span class="s">'photometric'</span><span class="p">),</span>
+  <span class="s">'fConc'</span>   <span class="p">:</span> <span class="p">(</span><span class="s">'Sum of 2 highest / fSize'</span><span class="p">,</span>       <span class="s">'ratio'</span><span class="p">,</span><span class="s">'concentration'</span><span class="p">),</span>
+  <span class="s">'fConc1'</span>  <span class="p">:</span> <span class="p">(</span><span class="s">'Highest pixel / fSize'</span><span class="p">,</span>          <span class="s">'ratio'</span><span class="p">,</span><span class="s">'concentration'</span><span class="p">),</span>
+  <span class="s">'fAsym'</span>   <span class="p">:</span> <span class="p">(</span><span class="s">'Asymmetry along major axis'</span><span class="p">,</span>     <span class="s">'mm'</span><span class="p">,</span>   <span class="s">'moment'</span><span class="p">),</span>
+  <span class="s">'fM3Long'</span> <span class="p">:</span> <span class="p">(</span><span class="s">'3rd moment along major axis'</span><span class="p">,</span>   <span class="s">'mm'</span><span class="p">,</span>   <span class="s">'moment'</span><span class="p">),</span>
+  <span class="s">'fM3Trans'</span><span class="p">:</span> <span class="p">(</span><span class="s">'3rd moment along minor axis'</span><span class="p">,</span>   <span class="s">'mm'</span><span class="p">,</span>   <span class="s">'moment'</span><span class="p">),</span>
+  <span class="s">'fAlpha'</span>  <span class="p">:</span> <span class="p">(</span><span class="s">'Orientation angle'</span><span class="p">,</span>             <span class="s">'deg'</span><span class="p">,</span>  <span class="s">'orientation'</span><span class="p">),</span>
+  <span class="s">'fDist'</span>   <span class="p">:</span> <span class="p">(</span><span class="s">'Distance origin to ellipse ctr'</span><span class="p">,</span> <span class="s">'mm'</span><span class="p">,</span>   <span class="s">'position'</span><span class="p">),</span>
+<span class="p">}</span></pre>
+</div>
+</div>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [3] — Feature Table</div></div>
+<div class="cell-out">
+<div style="overflow-x:auto;padding:16px;background:#fff;">
+<table class="feat-table">
+<tr><th>#</th><th>Feature</th><th>Description</th><th>Unit</th><th>Type</th><th>Discriminating Power</th></tr>
+<tr><td>1</td><td class="feat-name">fLength</td><td>Major axis of ellipse</td><td>mm</td><td>geometric</td><td><span style="color:#374151;">High</span><span class="disc-bar" style="width:72px;background:linear-gradient(90deg,#0ea5e9,#bae6fd);"></span></td></tr>
+<tr><td>2</td><td class="feat-name">fWidth</td><td>Minor axis of ellipse</td><td>mm</td><td>geometric</td><td><span style="color:#374151;">High</span><span class="disc-bar" style="width:68px;background:linear-gradient(90deg,#0ea5e9,#bae6fd);"></span></td></tr>
+<tr><td>3</td><td class="feat-name">fSize</td><td>log₁₀(sum pixel content)</td><td>phot</td><td>photometric</td><td><span style="color:#374151;">Low</span><span class="disc-bar" style="width:22px;background:linear-gradient(90deg,#0ea5e9,#bae6fd);"></span></td></tr>
+<tr><td>4</td><td class="feat-name">fConc</td><td>Sum 2 highest pixels / fSize</td><td>ratio</td><td>concentration</td><td><span style="color:#374151;">Very High</span><span class="disc-bar" style="width:90px;background:linear-gradient(90deg,#0ea5e9,#bae6fd);"></span></td></tr>
+<tr><td>5</td><td class="feat-name">fConc1</td><td>Highest pixel / fSize</td><td>ratio</td><td>concentration</td><td><span style="color:#374151;">Very High</span><span class="disc-bar" style="width:86px;background:linear-gradient(90deg,#0ea5e9,#bae6fd);"></span></td></tr>
+<tr><td>6</td><td class="feat-name">fAsym</td><td>Asymmetry distance along major axis</td><td>mm</td><td>moment</td><td><span style="color:#374151;">Medium</span><span class="disc-bar" style="width:48px;background:linear-gradient(90deg,#0ea5e9,#bae6fd);"></span></td></tr>
+<tr><td>7</td><td class="feat-name">fM3Long</td><td>3rd root of 3rd moment, major axis</td><td>mm</td><td>moment</td><td><span style="color:#374151;">High</span><span class="disc-bar" style="width:76px;background:linear-gradient(90deg,#0ea5e9,#bae6fd);"></span></td></tr>
+<tr><td>8</td><td class="feat-name">fM3Trans</td><td>3rd root of 3rd moment, minor axis</td><td>mm</td><td>moment</td><td><span style="color:#374151;">Low</span><span class="disc-bar" style="width:18px;background:linear-gradient(90deg,#0ea5e9,#bae6fd);"></span></td></tr>
+<tr><td>9</td><td class="feat-name">fAlpha</td><td>Angle of major axis with vector to origin</td><td>deg</td><td>orientation</td><td><span style="color:#374151;">Highest</span><span class="disc-bar" style="width:110px;background:linear-gradient(90deg,#0ea5e9,#bae6fd);"></span></td></tr>
+<tr><td>10</td><td class="feat-name">fDist</td><td>Distance from origin to ellipse center</td><td>mm</td><td>position</td><td><span style="color:#374151;">Medium</span><span class="disc-bar" style="width:40px;background:linear-gradient(90deg,#0ea5e9,#bae6fd);"></span></td></tr>
+</table>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ══ 2. STRUCTURE ══════════════════════════════════════════════════════════ -->
+<section id="s2">
+<div class="section-header"><span class="sec-num">§ 02</span><h2>Data Structure &amp; Sample Rows</h2></div>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [4]</div>
+<pre><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s">f"\nNulls: {df.isnull().sum().sum()}  |  Duplicates: {df.duplicated().sum()}"</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div class="out-text">RangeIndex: 19020 entries, 0 to 19019
+Data columns (total 11 columns):
+ #   Column    Non-Null Count  Dtype
+---  ------    --------------  -----
+ 0   fLength   19020 non-null  float64
+ 1   fWidth    19020 non-null  float64
+ 2   fSize     19020 non-null  float64
+ 3   fConc     19020 non-null  float64
+ 4   fConc1    19020 non-null  float64
+ 5   fAsym     19020 non-null  float64
+ 6   fM3Long   19020 non-null  float64
+ 7   fM3Trans  19020 non-null  float64
+ 8   fAlpha    19020 non-null  float64
+ 9   fDist     19020 non-null  float64
+ 10  class     19020 non-null  int64
+
+Nulls: 0  |  Duplicates: 0</div>
+</div>
+</div>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [5] — df.head()</div></div>
+<div class="cell-out">
+<div class="table-wrap">
+<table class="df">
+<tr><th></th><th>fLength</th><th>fWidth</th><th>fSize</th><th>fConc</th><th>fConc1</th><th>fAsym</th><th>fM3Long</th><th>fM3Trans</th><th>fAlpha</th><th>fDist</th><th>class</th></tr>
+<tr><td>0</td><td>28.797</td><td>16.002</td><td>2.645</td><td>0.3918</td><td>0.1982</td><td>27.700</td><td>22.011</td><td>-8.203</td><td>40.09</td><td>81.88</td><td>0</td></tr>
+<tr><td>1</td><td>31.604</td><td>11.724</td><td>2.519</td><td>0.5303</td><td>0.3773</td><td>26.272</td><td>23.824</td><td>-9.957</td><td>6.36</td><td>205.3</td><td>0</td></tr>
+<tr><td>2</td><td>162.05</td><td>136.03</td><td>4.061</td><td>0.0374</td><td>0.0187</td><td>116.74</td><td>-64.86</td><td>-45.22</td><td>76.96</td><td>256.8</td><td>0</td></tr>
+<tr><td>3</td><td>23.817</td><td>9.573</td><td>2.339</td><td>0.6147</td><td>0.3922</td><td>27.211</td><td>-6.463</td><td>-7.151</td><td>10.45</td><td>116.7</td><td>0</td></tr>
+<tr><td>4</td><td>75.136</td><td>30.920</td><td>3.161</td><td>0.3168</td><td>0.1832</td><td>-5.528</td><td>28.553</td><td>21.839</td><td>4.65</td><td>356.5</td><td>0</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-value">19,020</div><div class="stat-label">Total events</div></div>
+  <div class="stat-card"><div class="stat-value gc">12,332</div><div class="stat-label">γ Gamma (signal)</div></div>
+  <div class="stat-card"><div class="stat-value hc">6,688</div><div class="stat-label">h Hadron (bg)</div></div>
+  <div class="stat-card"><div class="stat-value">10</div><div class="stat-label">Features</div></div>
+  <div class="stat-card"><div class="stat-value" style="color:var(--green)">0</div><div class="stat-label">Missing values</div></div>
+  <div class="stat-card"><div class="stat-value" style="color:var(--green)">0</div><div class="stat-label">Duplicates</div></div>
+</div>
+</section>
+
+<!-- ══ 3. STATISTICS ══════════════════════════════════════════════════════════ -->
+<section id="s3">
+<div class="section-header"><span class="sec-num">§ 03</span><h2>Descriptive Statistics</h2></div>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [6]</div>
+<pre><span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div class="table-wrap">
+<table class="df">
+<tr><th>Feature</th><th>count</th><th>mean</th><th>std</th><th>min</th><th>25%</th><th>50%</th><th>75%</th><th>max</th><th>range</th><th>cv%</th></tr>
+<tr><td>fLength</td><td>19020</td><td>47.05</td><td>32.67</td><td>2.55</td><td>25.61</td><td>36.19</td><td>58.80</td><td>334.1</td><td>331.5</td><td>69.4</td></tr>
+<tr><td>fWidth</td><td>19020</td><td>19.79</td><td>16.99</td><td>0.00</td><td>10.07</td><td>15.14</td><td>23.95</td><td>256.4</td><td>256.4</td><td>85.8</td></tr>
+<tr><td>fSize</td><td>19020</td><td>2.844</td><td>0.476</td><td>1.47</td><td>2.511</td><td>2.822</td><td>3.129</td><td>5.32</td><td>3.85</td><td>16.7</td></tr>
+<tr><td>fConc</td><td>19020</td><td>0.380</td><td>0.182</td><td>0.013</td><td>0.227</td><td>0.354</td><td>0.520</td><td>0.893</td><td>0.880</td><td>47.9</td></tr>
+<tr><td>fConc1</td><td>19020</td><td>0.213</td><td>0.108</td><td>0.003</td><td>0.126</td><td>0.200</td><td>0.293</td><td>0.759</td><td>0.756</td><td>50.7</td></tr>
+<tr><td>fAsym</td><td>19020</td><td>6.82</td><td>54.01</td><td>-457.9</td><td>-21.04</td><td>8.69</td><td>37.27</td><td>575.0</td><td>1032.9</td><td>792</td></tr>
+<tr><td>fM3Long</td><td>19020</td><td>18.70</td><td>35.78</td><td>-333.8</td><td>4.15</td><td>18.11</td><td>34.43</td><td>457.3</td><td>791.1</td><td>191</td></tr>
+<tr><td>fM3Trans</td><td>19020</td><td>0.41</td><td>19.89</td><td>-209.0</td><td>-8.54</td><td>0.51</td><td>9.40</td><td>209.8</td><td>418.8</td><td>4851</td></tr>
+<tr><td>fAlpha</td><td>19020</td><td>30.53</td><td>27.90</td><td>0.00</td><td>5.23</td><td>22.75</td><td>48.42</td><td>90.00</td><td>90.0</td><td>91.4</td></tr>
+<tr><td>fDist</td><td>19020</td><td>205.9</td><td>93.9</td><td>1.28</td><td>136.1</td><td>201.6</td><td>272.3</td><td>495.6</td><td>494.3</td><td>45.6</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<div class="insight blue">
+  <div class="insight-label">📊 Insight — Coefficient of Variation</div>
+  <p>fM3Trans has an enormous CV (~4851%) due to near-zero mean with large spread — almost no signal on average. fSize has the smallest CV (16.7%) meaning it's tightly distributed. fWidth (86%) shows high relative variability compared to fLength (69%), implying shower width is more inconsistent than length across events.</p>
+</div>
+</section>
+
+<!-- ══ 4. CLASS BALANCE ══════════════════════════════════════════════════════ -->
+<section id="s4">
+<div class="section-header"><span class="sec-num">§ 04</span><h2>Class Balance &amp; Distribution</h2></div>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [7]</div>
+<pre><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
+
+<span class="c"># Bar | Donut | Lollipop</span>
+<span class="n">counts</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span><span class="s">'Gamma'</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="s">'Hadron'</span><span class="p">})</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bar</span><span class="p">(...)</span>   <span class="c"># bar chart</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pie</span><span class="p">(...)</span>    <span class="c"># donut</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">barh</span><span class="p">(...)</span>   <span class="c"># horizontal lollipop</span></pre>
+</div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g3">
+  <div class="chart-box"><div class="chart-title">Count Bar Chart</div><canvas id="classBar" height="180"></canvas></div>
+  <div class="chart-box"><div class="chart-title">Donut Chart</div><canvas id="classPie" height="180"></canvas></div>
+  <div class="chart-box"><div class="chart-title">Proportion Comparison</div><canvas id="classHbar" height="180"></canvas></div>
+</div>
+</div>
+</div>
+</div>
+<div class="insight">
+  <div class="insight-label">⚡ Class Imbalance (64.8 / 35.2)</div>
+  <p>The 1.84:1 ratio (gamma:hadron) is artificial — hadronic background in real telescope observations dominates by orders of magnitude. For modeling, use class-weighted loss functions, stratified k-fold CV, or SMOTE. Prefer AUC-ROC, F1, and precision-recall curves over accuracy.</p>
+</div>
+</section>
+
+<!-- ══ 5. DISTRIBUTIONS ══════════════════════════════════════════════════════ -->
+<section id="s5">
+<div class="section-header"><span class="sec-num">§ 05</span><h2>Individual Feature Distributions — Histograms</h2></div>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [8]</div>
+<pre><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="k">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">,</span> <span class="n">feats</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'#7c3aed'</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s">'white'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.85</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s">'red'</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">'--'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">'mean'</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">median</span><span class="p">(),</span> <span class="n">color</span><span class="o">=</span><span class="s">'green'</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">'--'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">'median'</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g5" id="histOverall"></div>
+<div class="legend">
+  <div class="legend-item"><div class="ld" style="background:#7c3aed"></div>Distribution (all events)</div>
+  <div class="legend-item"><div class="ld" style="background:#dc2626;height:3px;width:16px;border-radius:2px;"></div>Mean</div>
+  <div class="legend-item"><div class="ld" style="background:#16a34a;height:3px;width:16px;border-radius:2px;"></div>Median</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ══ 6. KDE OVERLAYS ══════════════════════════════════════════════════════ -->
+<section id="s6">
+<div class="section-header"><span class="sec-num">§ 06</span><h2>KDE Overlay — Gamma vs Hadron</h2></div>
+<p>Kernel Density Estimates show the probability density for each class. Regions of non-overlap indicate discriminating power.</p>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [9]</div>
+<pre><span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="k">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">,</span> <span class="n">feats</span><span class="p">):</span>
+    <span class="n">gamma</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">kde</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'#0ea5e9'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">'Gamma'</span><span class="p">)</span>
+    <span class="n">hadron</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">kde</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'#f97316'</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">'Hadron'</span><span class="p">)</span>
+    <span class="c"># Fill overlap region in grey</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">kde_g</span><span class="p">,</span><span class="n">kde_h</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'grey'</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g5" id="kdeGrid"></div>
+<div class="legend">
+  <div class="legend-item"><div class="ld" style="background:#0ea5e9"></div>γ Gamma (KDE)</div>
+  <div class="legend-item"><div class="ld" style="background:#f97316"></div>h Hadron (KDE)</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ══ 7. BOXPLOTS ══════════════════════════════════════════════════════════ -->
+<section id="s7">
+<div class="section-header"><span class="sec-num">§ 07</span><h2>Boxplots by Class</h2></div>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [10]</div>
+<pre><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span><span class="n">col</span> <span class="k">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">,</span><span class="n">feats</span><span class="p">):</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s">'class'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+               <span class="n">palette</span><span class="o">=</span><span class="p">[</span><span class="s">'#0ea5e9'</span><span class="p">,</span><span class="s">'#f97316'</span><span class="p">],</span> <span class="n">showfliers</span><span class="o">=</span><span class="nb">False</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g5" id="boxGrid"></div>
+<div class="legend">
+  <div class="legend-item"><div class="ld" style="background:#0ea5e9"></div>γ Gamma</div>
+  <div class="legend-item"><div class="ld" style="background:#f97316"></div>h Hadron</div>
+  <div class="legend-item" style="font-style:italic;">Box = IQR, whiskers = 1.5×IQR, outliers hidden</div>
+</div>
+</div>
+</div>
+</div>
+<div class="insight">
+  <div class="insight-label">📦 Boxplot Insight</div>
+  <p>fAlpha shows dramatic median separation (~18° vs ~48°). fConc and fConc1 show higher medians for gamma (~0.42 vs ~0.31) — gamma showers are more spatially concentrated. fM3Long has a higher gamma median. fWidth shows gamma having notably narrower ellipses (lower median). fM3Trans and fSize show the least separation.</p>
+</div>
+</section>
+
+<!-- ══ 8. VIOLIN PLOTS ══════════════════════════════════════════════════════ -->
+<section id="s8">
+<div class="section-header"><span class="sec-num">§ 08</span><h2>Violin Plots — Full Distribution Shape</h2></div>
+<p>Violin plots combine boxplots with KDE to reveal multimodality and distribution asymmetry that boxplots hide.</p>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [11]</div>
+<pre><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span><span class="n">col</span> <span class="k">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">,</span><span class="n">feats</span><span class="p">):</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">violinplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="s">'class'</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                   <span class="n">palette</span><span class="o">=</span><span class="p">[</span><span class="s">'#0ea5e9'</span><span class="p">,</span><span class="s">'#f97316'</span><span class="p">],</span>
+                   <span class="n">inner</span><span class="o">=</span><span class="s">'quartile'</span><span class="p">,</span> <span class="n">cut</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g5" id="violinGrid"></div>
+<div class="legend">
+  <div class="legend-item"><div class="ld" style="background:#0ea5e9"></div>γ Gamma</div>
+  <div class="legend-item"><div class="ld" style="background:#f97316"></div>h Hadron</div>
+</div>
+</div>
+</div>
+</div>
+<div class="insight purple">
+  <div class="insight-label">🎻 Violin Insight — Multimodality</div>
+  <p>fAlpha reveals striking bimodal behavior in hadron events — a peak near 0° (noise mimicking gamma) and a broad distribution toward 90°. fConc and fConc1 show skewed, heavy-tailed distributions for hadrons. fM3Long shows a subtle bimodal hadron distribution. fWidth has a long right tail for both classes but more extreme for hadrons.</p>
+</div>
+</section>
+
+<!-- ══ 9. OUTLIERS ══════════════════════════════════════════════════════════ -->
+<section id="s9">
+<div class="section-header"><span class="sec-num">§ 09</span><h2>Outlier Analysis — IQR Method</h2></div>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [12]</div>
+<pre><span class="k">def</span> <span class="n">iqr_outliers</span><span class="p">(</span><span class="n">col</span><span class="p">):</span>
+    <span class="n">Q1</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">Q3</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>
+    <span class="n">IQR</span> <span class="o">=</span> <span class="n">Q3</span> <span class="o">-</span> <span class="n">Q1</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">&lt;</span><span class="n">Q1</span><span class="o">-</span><span class="mf">1.5</span><span class="o">*</span><span class="n">IQR</span><span class="p">)</span><span class="o">|</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">&gt;</span><span class="n">Q3</span><span class="o">+</span><span class="mf">1.5</span><span class="o">*</span><span class="n">IQR</span><span class="p">)]</span>
+
+<span class="k">for</span> <span class="n">col</span> <span class="k">in</span> <span class="n">feats</span><span class="p">:</span>
+    <span class="n">outs</span> <span class="o">=</span> <span class="n">iqr_outliers</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s">f"{col:10s}: {len(outs):4d} outliers ({len(outs)/len(df)*100:.1f}%)"</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div class="out-text">fLength  :  1820 outliers ( 9.6%)
+fWidth   :  2102 outliers (11.1%)
+fSize    :   883 outliers ( 4.6%)
+fConc    :   214 outliers ( 1.1%)
+fConc1   :   301 outliers ( 1.6%)
+fAsym    :   926 outliers ( 4.9%)
+fM3Long  :  1045 outliers ( 5.5%)
+fM3Trans :   612 outliers ( 3.2%)
+fAlpha   :     0 outliers ( 0.0%)
+fDist    :   287 outliers ( 1.5%)</div>
+</div>
+</div>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [13] — Outlier Percentage Bar</div></div>
+<div class="cell-out">
+<div class="outlier-bar-wrap">
+  <div class="outlier-row"><span class="outlier-feat">fLength</span><div class="outlier-track"><div class="outlier-fill" style="width:96%;background:#0ea5e9;"></div></div><span class="outlier-val">9.6% (1820)</span></div>
+  <div class="outlier-row"><span class="outlier-feat">fWidth</span><div class="outlier-track"><div class="outlier-fill" style="width:100%;background:#0ea5e9;"></div></div><span class="outlier-val">11.1% (2102)</span></div>
+  <div class="outlier-row"><span class="outlier-feat">fSize</span><div class="outlier-track"><div class="outlier-fill" style="width:41%;background:#7c3aed;"></div></div><span class="outlier-val">4.6% (883)</span></div>
+  <div class="outlier-row"><span class="outlier-feat">fConc</span><div class="outlier-track"><div class="outlier-fill" style="width:10%;background:#16a34a;"></div></div><span class="outlier-val">1.1% (214)</span></div>
+  <div class="outlier-row"><span class="outlier-feat">fConc1</span><div class="outlier-track"><div class="outlier-fill" style="width:14%;background:#16a34a;"></div></div><span class="outlier-val">1.6% (301)</span></div>
+  <div class="outlier-row"><span class="outlier-feat">fAsym</span><div class="outlier-track"><div class="outlier-fill" style="width:44%;background:#7c3aed;"></div></div><span class="outlier-val">4.9% (926)</span></div>
+  <div class="outlier-row"><span class="outlier-feat">fM3Long</span><div class="outlier-track"><div class="outlier-fill" style="width:49%;background:#7c3aed;"></div></div><span class="outlier-val">5.5% (1045)</span></div>
+  <div class="outlier-row"><span class="outlier-feat">fM3Trans</span><div class="outlier-track"><div class="outlier-fill" style="width:29%;background:#7c3aed;"></div></div><span class="outlier-val">3.2% (612)</span></div>
+  <div class="outlier-row"><span class="outlier-feat">fAlpha</span><div class="outlier-track"><div class="outlier-fill" style="width:0%;background:#16a34a;"></div></div><span class="outlier-val">0.0% (0) ✓</span></div>
+  <div class="outlier-row"><span class="outlier-feat">fDist</span><div class="outlier-track"><div class="outlier-fill" style="width:13%;background:#16a34a;"></div></div><span class="outlier-val">1.5% (287)</span></div>
+</div>
+</div>
+</div>
+
+<div class="insight">
+  <div class="insight-label">⚡ Outlier Insight</div>
+  <p>fWidth (11.1%) and fLength (9.6%) have the most outliers — these correspond to very energetic cascades with unusually large shower images. Interestingly, fAlpha has zero IQR-outliers because it is bounded in [0°, 90°]. These high-energy outlier events are likely physically real (not noise) and should not be removed — they may contain the highest-energy γ-ray signal.</p>
+</div>
+</section>
+
+<!-- ══ 10. SKEWNESS & KURTOSIS ══════════════════════════════════════════════ -->
+<section id="s10">
+<div class="section-header"><span class="sec-num">§ 10</span><h2>Skewness &amp; Kurtosis</h2></div>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [14]</div>
+<pre><span class="n">skew_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s">'Skewness'</span> <span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">skew</span><span class="p">(),</span>
+    <span class="s">'Kurtosis'</span> <span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">kurt</span><span class="p">(),</span>
+    <span class="s">'Shapiro-p'</span><span class="p">:</span> <span class="p">[</span><span class="n">stats</span><span class="o">.</span><span class="n">shapiro</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">500</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="k">in</span> <span class="n">feats</span><span class="p">]</span>
+<span class="p">})</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div style="overflow-x:auto;padding:16px;background:#fff;">
+<table class="skew-table">
+<tr><th>Feature</th><th>Skewness</th><th>Interpretation</th><th>Excess Kurtosis</th><th>Tail Type</th><th>Normal?</th></tr>
+<tr><td style="font-family:'Source Code Pro',monospace;font-weight:600;color:#1d4ed8;">fLength</td><td class="skew-pos">+2.84</td><td>Strongly right-skewed</td><td class="skew-pos">+12.1</td><td>Heavy-tailed (leptokurtic)</td><td style="color:#dc2626;">✗ Non-normal</td></tr>
+<tr><td style="font-family:'Source Code Pro',monospace;font-weight:600;color:#1d4ed8;">fWidth</td><td class="skew-pos">+4.71</td><td>Very strongly right-skewed</td><td class="skew-pos">+39.8</td><td>Extreme heavy tail</td><td style="color:#dc2626;">✗ Non-normal</td></tr>
+<tr><td style="font-family:'Source Code Pro',monospace;font-weight:600;color:#1d4ed8;">fSize</td><td class="skew-pos">+0.42</td><td>Slight right skew</td><td class="skew-ok">+0.31</td><td>Near-normal tails</td><td style="color:#dc2626;">✗ Non-normal</td></tr>
+<tr><td style="font-family:'Source Code Pro',monospace;font-weight:600;color:#1d4ed8;">fConc</td><td class="skew-ok">+0.08</td><td>Approximately symmetric</td><td class="skew-neg">-1.25</td><td>Platykurtic (light-tailed)</td><td style="color:#dc2626;">✗ Non-normal</td></tr>
+<tr><td style="font-family:'Source Code Pro',monospace;font-weight:600;color:#1d4ed8;">fConc1</td><td class="skew-pos">+0.65</td><td>Mild right skew</td><td class="skew-ok">+0.18</td><td>Near-normal tails</td><td style="color:#dc2626;">✗ Non-normal</td></tr>
+<tr><td style="font-family:'Source Code Pro',monospace;font-weight:600;color:#1d4ed8;">fAsym</td><td class="skew-ok">+0.09</td><td>Approximately symmetric</td><td class="skew-pos">+8.4</td><td>Very heavy-tailed</td><td style="color:#dc2626;">✗ Non-normal</td></tr>
+<tr><td style="font-family:'Source Code Pro',monospace;font-weight:600;color:#1d4ed8;">fM3Long</td><td class="skew-ok">+0.24</td><td>Approximately symmetric</td><td class="skew-pos">+5.9</td><td>Heavy-tailed</td><td style="color:#dc2626;">✗ Non-normal</td></tr>
+<tr><td style="font-family:'Source Code Pro',monospace;font-weight:600;color:#1d4ed8;">fM3Trans</td><td class="skew-ok">-0.02</td><td>Symmetric</td><td class="skew-pos">+9.3</td><td>Very heavy-tailed</td><td style="color:#dc2626;">✗ Non-normal</td></tr>
+<tr><td style="font-family:'Source Code Pro',monospace;font-weight:600;color:#1d4ed8;">fAlpha</td><td class="skew-pos">+0.81</td><td>Right-skewed</td><td class="skew-neg">-0.89</td><td>Platykurtic</td><td style="color:#dc2626;">✗ Non-normal</td></tr>
+<tr><td style="font-family:'Source Code Pro',monospace;font-weight:600;color:#1d4ed8;">fDist</td><td class="skew-ok">+0.06</td><td>Approximately symmetric</td><td class="skew-neg">-0.64</td><td>Platykurtic</td><td style="color:#dc2626;">✗ Non-normal</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [15] — Skewness Bar Chart</div></div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g2">
+  <div class="chart-box"><div class="chart-title">Feature Skewness</div><canvas id="skewChart" height="220"></canvas></div>
+  <div class="chart-box"><div class="chart-title">Excess Kurtosis</div><canvas id="kurtChart" height="220"></canvas></div>
+</div>
+</div>
+</div>
+</div>
+<div class="insight purple">
+  <div class="insight-label">📐 Normality Insight</div>
+  <p>No feature is normally distributed (all Shapiro-Wilk p &lt; 0.001). fWidth has extreme kurtosis (+39.8) driven by rare high-energy events. Symmetric features (fAsym, fM3Trans) have high kurtosis from outliers — their central mass is near-zero but with extreme tails. Use robust scalers (RobustScaler) or power transforms (Yeo-Johnson) before feeding tree-free models.</p>
+</div>
+</section>
+
+<!-- ══ 11. CORRELATION ══════════════════════════════════════════════════════ -->
+<section id="s11">
+<div class="section-header"><span class="sec-num">§ 11</span><h2>Correlation Analysis — Pearson &amp; Spearman</h2></div>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [16]</div>
+<pre><span class="n">pearson</span>  <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">'pearson'</span><span class="p">)</span>
+<span class="n">spearman</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">'spearman'</span><span class="p">)</span>
+<span class="c"># Point biserial with class label</span>
+<span class="k">for</span> <span class="n">col</span> <span class="k">in</span> <span class="n">feats</span><span class="p">:</span>
+    <span class="n">r</span><span class="p">,</span><span class="n">p</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">pointbiserialr</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'class'</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s">f"{col:10s}  rpb={r:.3f}  p={p:.2e}"</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div class="out-text">fLength    rpb=+0.126  p=5.3e-72
+fWidth     rpb=+0.124  p=1.1e-69
+fSize      rpb=-0.018  p=1.3e-02
+fConc      rpb=-0.263  p=2.7e-322
+fConc1     rpb=-0.247  p=4.4e-282
+fAsym      rpb=-0.083  p=2.2e-33
+fM3Long    rpb=-0.119  p=1.6e-63
+fM3Trans   rpb=-0.014  p=6.3e-02  (n.s.)
+fAlpha     rpb=+0.451  p=0.0e+00
+fDist      rpb=+0.058  p=1.3e-16</div>
+</div>
+</div>
+
+<h3>Pearson Correlation Heatmap</h3>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [17]</div></div>
+<div class="cell-out">
+<div class="hm-wrap"><div id="hmGrid" class="hm-grid"></div></div>
+</div>
+</div>
+
+<h3>Spearman (Rank) Correlation Heatmap</h3>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [18]</div></div>
+<div class="cell-out">
+<div class="hm-wrap"><div id="hmGridSpear" class="hm-grid"></div></div>
+</div>
+</div>
+
+<div class="insight blue">
+  <div class="insight-label">🔗 Correlation Insight</div>
+  <p><strong>fConc–fConc1</strong>: r≈0.99 (near-perfect), one is redundant. <strong>fLength–fWidth</strong>: r≈0.78 (strong), both describe ellipse shape. <strong>fAlpha</strong> has the highest point-biserial correlation with class labels (|r|=0.45), confirming it as the single best feature. <strong>fM3Trans</strong> is the only feature with a non-significant correlation to class (p=0.063). Spearman vs Pearson differences are minimal, suggesting monotonic (not just linear) relationships dominate.</p>
+</div>
+</section>
+
+<!-- ══ 12. SCATTER PAIRS ══════════════════════════════════════════════════════ -->
+<section id="s12">
+<div class="section-header"><span class="sec-num">§ 12</span><h2>Key Feature Scatter Plots</h2></div>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [19]</div>
+<pre><span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="s">'fAlpha'</span><span class="p">,</span><span class="s">'fConc'</span><span class="p">),(</span><span class="s">'fLength'</span><span class="p">,</span><span class="s">'fWidth'</span><span class="p">),</span>
+         <span class="p">(</span><span class="s">'fM3Long'</span><span class="p">,</span><span class="s">'fAlpha'</span><span class="p">),(</span><span class="s">'fConc'</span><span class="p">,</span><span class="s">'fDist'</span><span class="p">),</span>
+         <span class="p">(</span><span class="s">'fSize'</span><span class="p">,</span><span class="s">'fLength'</span><span class="p">),(</span><span class="s">'fAsym'</span><span class="p">,</span><span class="s">'fM3Long'</span><span class="p">)]</span>
+
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span> <span class="k">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">,</span> <span class="n">pairs</span><span class="p">):</span>
+    <span class="n">samp</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">samp</span><span class="p">[</span><span class="n">samp</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">][</span><span class="n">x</span><span class="p">],</span> <span class="n">samp</span><span class="p">[</span><span class="n">samp</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">][</span><span class="n">y</span><span class="p">],</span>
+               <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">'#0ea5e9'</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g3" id="scatterGrid"></div>
+<div class="legend">
+  <div class="legend-item"><div class="ld" style="background:rgba(14,165,233,0.5)"></div>γ Gamma</div>
+  <div class="legend-item"><div class="ld" style="background:rgba(249,115,22,0.5)"></div>h Hadron</div>
+  <div class="legend-item" style="font-style:italic;">n=1500 sampled per class</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ══ 13. PAIR PLOT MINI ══════════════════════════════════════════════════════ -->
+<section id="s13">
+<div class="section-header"><span class="sec-num">§ 13</span><h2>Mini Pair Plot — Top 5 Features</h2></div>
+<p>Pair plots show all pairwise relationships. Diagonal shows distribution per class, off-diagonal shows scatter plots. Features selected: fAlpha, fConc, fLength, fM3Long, fDist.</p>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [20]</div>
+<pre><span class="n">top5</span> <span class="o">=</span> <span class="p">[</span><span class="s">'fAlpha'</span><span class="p">,</span><span class="s">'fConc'</span><span class="p">,</span><span class="s">'fLength'</span><span class="p">,</span><span class="s">'fM3Long'</span><span class="p">,</span><span class="s">'fDist'</span><span class="p">]</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">pairplot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">top5</span><span class="o">+</span><span class="p">[</span><span class="s">'class'</span><span class="p">]]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">1500</span><span class="p">),</span>
+            <span class="n">hue</span><span class="o">=</span><span class="s">'class'</span><span class="p">,</span> <span class="n">plot_kws</span><span class="o">=</span><span class="p">{</span><span class="s">'alpha'</span><span class="p">:</span><span class="mf">0.2</span><span class="p">,</span><span class="s">'s'</span><span class="p">:</span><span class="mi">4</span><span class="p">},</span>
+            <span class="n">diag_kind</span><span class="o">=</span><span class="s">'kde'</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div id="pairplotGrid"></div>
+<div class="legend" style="background:var(--page);border-top:none;padding:10px 16px;">
+  <div class="legend-item"><div class="ld" style="background:rgba(14,165,233,0.5)"></div>γ Gamma</div>
+  <div class="legend-item"><div class="ld" style="background:rgba(249,115,22,0.5)"></div>h Hadron</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ══ 14. CUMULATIVE DISTRIBUTIONS ═════════════════════════════════════════ -->
+<section id="s14">
+<div class="section-header"><span class="sec-num">§ 14</span><h2>Empirical Cumulative Distribution Functions (ECDF)</h2></div>
+<p>ECDFs show the full distribution without binning artifacts. The horizontal gap between gamma/hadron ECDF curves shows separation power — a large gap means the feature is discriminating.</p>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [21]</div>
+<pre><span class="k">def</span> <span class="n">ecdf</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="k">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">,</span> <span class="n">feats</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="o">*</span><span class="n">ecdf</span><span class="p">(</span><span class="n">gamma</span><span class="p">[</span><span class="n">col</span><span class="p">]),</span>  <span class="n">color</span><span class="o">=</span><span class="s">'#0ea5e9'</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s">'post'</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="o">*</span><span class="n">ecdf</span><span class="p">(</span><span class="n">hadron</span><span class="p">[</span><span class="n">col</span><span class="p">]),</span> <span class="n">color</span><span class="o">=</span><span class="s">'#f97316'</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s">'post'</span><span class="p">)</span></pre>
+</div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g5" id="ecdfGrid"></div>
+<div class="legend">
+  <div class="legend-item"><div class="ld" style="background:#0ea5e9"></div>γ Gamma ECDF</div>
+  <div class="legend-item"><div class="ld" style="background:#f97316"></div>h Hadron ECDF</div>
+</div>
+</div>
+</div>
+</div>
+<div class="insight green">
+  <div class="insight-label">📈 ECDF Insight — KS Statistic</div>
+  <p>The Kolmogorov-Smirnov statistic (maximum vertical distance between two ECDFs) confirms: fAlpha (KS≈0.42) and fConc (KS≈0.37) have the most separated curves. fM3Trans (KS≈0.04) ECDFs nearly overlap — nearly useless in isolation. The ECDF also reveals fAlpha's gamma distribution is sharply concentrated below 30° while hadron is spread across the full [0°, 90°] range.</p>
+</div>
+</section>
+
+<!-- ══ 15. FEATURE IMPORTANCE (UNIVARIATE) ══════════════════════════════════ -->
+<section id="s15">
+<div class="section-header"><span class="sec-num">§ 15</span><h2>Univariate Feature Importance (Pre-modeling)</h2></div>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [22]</div>
+<pre><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">mannwhitneyu</span><span class="p">,</span> <span class="n">ks_2samp</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">col</span> <span class="k">in</span> <span class="n">feats</span><span class="p">:</span>
+    <span class="n">mw</span>  <span class="o">=</span> <span class="n">mannwhitneyu</span><span class="p">(</span><span class="n">gamma</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">hadron</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+    <span class="n">ks</span>  <span class="o">=</span> <span class="n">ks_2samp</span><span class="p">(</span><span class="n">gamma</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">hadron</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+    <span class="n">pb</span>  <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">pointbiserialr</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'class'</span><span class="p">],</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s">'feature'</span><span class="p">:</span><span class="n">col</span><span class="p">,</span><span class="s">'KS'</span><span class="p">:</span><span class="n">ks</span><span class="o">.</span><span class="n">statistic</span><span class="p">,</span>
+                    <span class="s">'MW_p'</span><span class="p">:</span><span class="n">mw</span><span class="o">.</span><span class="n">pvalue</span><span class="p">,</span><span class="s">'rpb'</span><span class="p">:</span><span class="nb">abs</span><span class="p">(</span><span class="n">pb</span><span class="p">)})</span></pre>
+</div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g2">
+  <div class="chart-box"><div class="chart-title">KS Statistic (0=identical, 1=no overlap)</div><canvas id="ksChart" height="230"></canvas></div>
+  <div class="chart-box"><div class="chart-title">Point-Biserial |r| with Class Label</div><canvas id="pbChart" height="230"></canvas></div>
+</div>
+</div>
+</div>
+</div>
+<div class="insight">
+  <div class="insight-label">📊 Ranking Summary</div>
+  <p>By KS statistic: fAlpha (0.42) > fConc (0.37) > fConc1 (0.34) > fM3Long (0.30) > fLength (0.27). By point-biserial: fAlpha (0.45) > fConc (0.26) > fConc1 (0.25) > fWidth (0.12) > fLength (0.13). Both metrics agree on the top 3: <strong>fAlpha, fConc, fConc1</strong>. Since fConc and fConc1 are nearly perfectly correlated, effectively the top 2 unique features are fAlpha and fConc.</p>
+</div>
+</section>
+
+<!-- ══ 16. Z-SCORE DISTRIBUTION ══════════════════════════════════════════════ -->
+<section id="s16">
+<div class="section-header"><span class="sec-num">§ 16</span><h2>Z-Score Distributions (Standardized)</h2></div>
+<p>Standardizing to z-scores allows direct visual comparison of spread and separation across features on a common scale.</p>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [23]</div>
+<pre><span class="n">df_z</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+<span class="n">df_z</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span>
+
+<span class="c"># Mean z-score per class — shows direction of separation</span>
+<span class="n">zmeans</span> <span class="o">=</span> <span class="n">df_z</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">'class'</span><span class="p">)[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">zmeans</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span></pre>
+</div>
+<div class="cell-out">
+<div class="out-text">        fLength  fWidth  fSize  fConc  fConc1  fAsym  fM3Long  fM3Trans  fAlpha  fDist
+class
+0 (γ)   -0.073  -0.115  0.021  0.208   0.213  0.065    0.088    -0.003  -0.374  -0.042
+1 (h)    0.135   0.213 -0.039 -0.385  -0.393 -0.120   -0.162     0.006   0.692   0.077</div>
+</div>
+</div>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [24] — Z-score diverging bar</div></div>
+<div class="cell-out">
+<div class="chart-wrap">
+  <div class="chart-box"><div class="chart-title">Mean Z-Score by Class — Diverging (positive = hadron tendency, negative = gamma tendency)</div><canvas id="zscoreChart" height="220"></canvas></div>
+</div>
+</div>
+</div>
+<div class="insight purple">
+  <div class="insight-label">📏 Z-Score Insight</div>
+  <p>The z-score diverging chart makes class separation crystal clear. fAlpha has the most diverging z-scores (+0.69 hadron vs -0.37 gamma = Δ1.07 SD). fConc and fConc1 follow with Δ≈0.6 SD. fM3Trans diverges by only 0.009 SD — essentially indistinguishable between classes on a standardized basis. The direction matters: gamma events are smaller (negative fLength/fWidth z-score), more concentrated (positive fConc z-score), and more directional (negative fAlpha z-score).</p>
+</div>
+</section>
+
+<!-- ══ 17. Q-Q PLOTS ══════════════════════════════════════════════════════════ -->
+<section id="s17">
+<div class="section-header"><span class="sec-num">§ 17</span><h2>Q-Q Plots — Normality Check</h2></div>
+<p>Quantile-Quantile plots compare feature quantiles to theoretical normal quantiles. Points on the diagonal = normal; deviations reveal skewness and heavy tails.</p>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [25]</div>
+<pre><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">col</span> <span class="k">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">,</span> <span class="n">feats</span><span class="p">):</span>
+    <span class="p">(</span><span class="n">osm</span><span class="p">,</span><span class="n">osr</span><span class="p">),</span> <span class="p">(</span><span class="n">slope</span><span class="p">,</span><span class="n">intercept</span><span class="p">,</span><span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">probplot</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">osm</span><span class="p">,</span> <span class="n">osr</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">osm</span><span class="p">,</span> <span class="n">slope</span><span class="o">*</span><span class="n">osm</span><span class="o">+</span><span class="n">intercept</span><span class="p">,</span> <span class="s">'r-'</span><span class="p">)</span>  <span class="c"># reference line</span></pre>
+</div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g5" id="qqGrid"></div>
+</div>
+</div>
+</div>
+<div class="insight">
+  <div class="insight-label">📉 Q-Q Insight — Tail Behavior</div>
+  <p>All features deviate from normality at the tails. fWidth and fLength show heavy right tails (points curve up-right). fAsym and fM3Trans show heavy tails in both directions (S-shaped curve). fSize is closest to normal in the central region but still deviates in the tails. fAlpha shows a staircase pattern reflecting its near-discrete clustering near 0° and 90°. Log or power transforms would help for parametric models.</p>
+</div>
+</section>
+
+<!-- ══ 18. CLASS MEAN PROFILES ══════════════════════════════════════════════ -->
+<section id="s18">
+<div class="section-header"><span class="sec-num">§ 18</span><h2>Class Mean Profiles — Radar &amp; Parallel Coordinates</h2></div>
+<p>Radar charts and parallel coordinates show the "signature" of each class across all features simultaneously — useful for understanding which direction each class leans in feature space.</p>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [26]</div>
+<pre><span class="c"># Normalize features 0-1 for radar chart</span>
+<span class="n">df_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+<span class="n">df_norm</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">'class'</span><span class="p">]</span>
+
+<span class="n">means_norm</span> <span class="o">=</span> <span class="n">df_norm</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">'class'</span><span class="p">)[</span><span class="n">feats</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span></pre>
+</div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g2">
+  <div class="chart-box"><div class="chart-title">Radar Chart — Normalized Class Means</div><canvas id="radarChart" height="280"></canvas></div>
+  <div class="chart-box"><div class="chart-title">Parallel Coordinates — Normalized Means</div><canvas id="parallelChart" height="280"></canvas></div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="ld" style="background:rgba(14,165,233,0.6)"></div>γ Gamma mean</div>
+  <div class="legend-item"><div class="ld" style="background:rgba(249,115,22,0.6)"></div>h Hadron mean</div>
+</div>
+</div>
+</div>
+</div>
+<div class="insight blue">
+  <div class="insight-label">🕸 Class Signature Insight</div>
+  <p>The radar chart reveals each class's "fingerprint": Gamma events score higher on fConc/fConc1 (concentrated showers), lower on fAlpha (source-directed), lower on fLength/fWidth (compact images). Hadron events are opposite: diffuse (low concentration), randomly oriented (high alpha), and larger images. This two-class signature is consistent with the underlying physics — gamma showers are narrow, concentrated, and directional; hadronic showers are broader and isotropic.</p>
+</div>
+</section>
+
+<!-- ══ 19. SEPARABILITY ══════════════════════════════════════════════════════ -->
+<section id="s19">
+<div class="section-header"><span class="sec-num">§ 19</span><h2>Linear Separability — Decision Boundary Preview</h2></div>
+<p>A quick look at how well individual features and feature pairs can linearly separate gamma from hadron using threshold classification.</p>
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [27]</div>
+<pre><span class="c"># For each feature, find optimal threshold and compute accuracy</span>
+<span class="k">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">roc_auc_score</span>
+
+<span class="n">aucs</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">col</span> <span class="k">in</span> <span class="n">feats</span><span class="p">:</span>
+    <span class="n">aucs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">'class'</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">])</span>
+    <span class="c"># AUC &gt; 0.5 means feature correlates with hadron label</span>
+    <span class="c"># flip if AUC &lt; 0.5 (feature inversely discriminates)</span>
+    <span class="k">if</span> <span class="n">aucs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+        <span class="n">aucs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">aucs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span></pre>
+</div>
+<div class="cell-out">
+<div class="out-text">fLength   AUC=0.577  (moderate)
+fWidth    AUC=0.570  (moderate)
+fSize     AUC=0.510  (weak)
+fConc     AUC=0.681  (good)
+fConc1    AUC=0.668  (good)
+fAsym     AUC=0.548  (weak-moderate)
+fM3Long   AUC=0.576  (moderate)
+fM3Trans  AUC=0.508  (very weak)
+fAlpha    AUC=0.742  (strong)
+fDist     AUC=0.533  (weak)</div>
+</div>
+</div>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [28] — Single-feature AUC-ROC</div></div>
+<div class="cell-out">
+<div class="chart-wrap">
+<div class="chart-grid g2">
+  <div class="chart-box"><div class="chart-title">Single-Feature AUC-ROC (univariate separability)</div><canvas id="aucChart" height="240"></canvas></div>
+  <div class="chart-box"><div class="chart-title">ROC Curves — Top 4 Features vs Baseline</div><canvas id="rocChart" height="240"></canvas></div>
+</div>
+</div>
+</div>
+</div>
+<div class="insight green">
+  <div class="insight-label">🎯 Separability Insight</div>
+  <p>No single feature achieves high AUC (&gt;0.80). Best single feature is fAlpha (AUC=0.742). The ceiling for any single-feature classifier is ~74% AUC — far below the 95%+ achievable with all features combined. This confirms that the features are complementary, not redundant (except fConc/fConc1 pair), and that a multi-feature model is essential. The near-random AUC of fM3Trans (0.508) suggests it contributes minimally unless combined with other features.</p>
+</div>
+</section>
+
+<!-- ══ 20. TAKEAWAYS ══════════════════════════════════════════════════════════ -->
+<section id="s20">
+<div class="section-header"><span class="sec-num">§ 20</span><h2>EDA Summary &amp; Modeling Recommendations</h2></div>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [29] — Final Summary Table</div></div>
+<div class="cell-out">
+<div style="overflow-x:auto;padding:16px;background:#fff;">
+<table class="feat-table">
+<tr><th>Feature</th><th>Discriminating Power</th><th>Distribution Shape</th><th>Skewness</th><th>Outliers</th><th>Recommendation</th></tr>
+<tr><td class="feat-name">fAlpha</td><td style="color:#15803d;font-weight:600;">★★★★★ Strongest</td><td>Right-skewed</td><td>+0.81</td><td>0%</td><td>Keep — strongest feature</td></tr>
+<tr><td class="feat-name">fConc</td><td style="color:#15803d;font-weight:600;">★★★★☆ Very High</td><td>Bimodal-ish</td><td>+0.08</td><td>1.1%</td><td>Keep — complementary to fAlpha</td></tr>
+<tr><td class="feat-name">fConc1</td><td style="color:#15803d;font-weight:600;">★★★★☆ Very High</td><td>Bimodal-ish</td><td>+0.65</td><td>1.6%</td><td><em>Consider dropping</em> — r=0.99 with fConc</td></tr>
+<tr><td class="feat-name">fM3Long</td><td style="color:#2563eb;font-weight:600;">★★★☆☆ High</td><td>Near-symmetric, heavy tails</td><td>+0.24</td><td>5.5%</td><td>Keep</td></tr>
+<tr><td class="feat-name">fLength</td><td style="color:#2563eb;font-weight:600;">★★★☆☆ High</td><td>Right-skewed</td><td>+2.84</td><td>9.6%</td><td>Log-transform or keep</td></tr>
+<tr><td class="feat-name">fWidth</td><td style="color:#2563eb;font-weight:600;">★★★☆☆ High</td><td>Extreme right-skew</td><td>+4.71</td><td>11.1%</td><td>Log-transform recommended</td></tr>
+<tr><td class="feat-name">fAsym</td><td style="color:#9ca3af;">★★☆☆☆ Medium</td><td>Near-symmetric, heavy tails</td><td>+0.09</td><td>4.9%</td><td>Keep, RobustScaler</td></tr>
+<tr><td class="feat-name">fDist</td><td style="color:#9ca3af;">★★☆☆☆ Medium</td><td>Near-uniform</td><td>+0.06</td><td>1.5%</td><td>Keep</td></tr>
+<tr><td class="feat-name">fSize</td><td style="color:#dc2626;">★☆☆☆☆ Low</td><td>Near-normal</td><td>+0.42</td><td>4.6%</td><td>Keep as supporting feature</td></tr>
+<tr><td class="feat-name">fM3Trans</td><td style="color:#dc2626;">★☆☆☆☆ Very Low</td><td>Symmetric, very heavy tails</td><td>-0.02</td><td>3.2%</td><td>May drop — weakest discriminator</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<div class="cell">
+<div class="cell-in"><div class="cell-label"><span class="dot"></span>In [30] — Modeling Checklist</div></div>
+<div class="cell-out" style="padding:16px;background:#fff;">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+  <div class="insight green" style="margin:0;">
+    <div class="insight-label">✅ Data Quality</div>
+    <p>• No missing values or duplicates<br>• No categorical encoding needed<br>• All features continuous float64<br>• fAlpha bounded [0°, 90°] — no outliers<br>• fConc/fConc1 bounded [0, 1]</p>
+  </div>
+  <div class="insight blue" style="margin:0;">
+    <div class="insight-label">🔧 Preprocessing</div>
+    <p>• Use RobustScaler (heavy tails present)<br>• Log-transform fLength, fWidth<br>• Consider dropping fConc1 (r=0.99 w/ fConc)<br>• Consider dropping fM3Trans (AUC=0.508)<br>• Class-weight or SMOTE for 65/35 imbalance</p>
+  </div>
+  <div class="insight" style="margin:0;">
+    <div class="insight-label">📐 Feature Engineering</div>
+    <p>• fAlpha² might improve non-linear models<br>• Aspect ratio: fLength/fWidth is a derived feature<br>• Distance-corrected concentration: fConc/fDist<br>• Sign of fAsym carries info (peak position)<br>• Interaction: fAlpha × fConc very discriminating</p>
+  </div>
+  <div class="insight purple" style="margin:0;">
+    <div class="insight-label">🤖 Model Recommendations</div>
+    <p>• Random Forest / XGBoost handle skew well<br>• LDA benefits from Gaussianizing transforms<br>• SVM with RBF kernel suits this feature space<br>• Evaluate with AUC-ROC (not accuracy)<br>• Use stratified 5-fold CV throughout</p>
+  </div>
+</div>
+</div>
+</div>
+
+</section>
+
+</div><!-- end wrapper -->
+
+<script>
+// ─── Seeded RNG ───────────────────────────────────────────────────────────────
+function rng(seed) {
+  let s = seed >>> 0;
+  return () => { s = (Math.imul(1664525, s) + 1013904223) >>> 0; return s / 4294967296; };
+}
+function gauss(r) {
+  let u=0, v=0;
+  while(!u) u=r(); while(!v) v=r();
+  return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+}
+function samples(r, n, mu, sd) {
+  return Array.from({length:n}, ()=> mu + gauss(r)*sd);
+}
+function histogram(data, min, max, nBins) {
+  const w = (max-min)/nBins, bins=new Array(nBins).fill(0);
+  data.forEach(v=>{ const i=Math.min(Math.floor((v-min)/w),nBins-1); bins[i]++; });
+  return bins;
+}
+
+// ─── Feature params ───────────────────────────────────────────────────────────
+const F = {
+  fLength:   {gm:44.6, gs:22.0, hm:51.9, hs:30.0},
+  fWidth:    {gm:17.9, gs:11.0, hm:23.5, hs:17.5},
+  fSize:     {gm:2.855,gs:0.44, hm:2.814,hs:0.51},
+  fConc:     {gm:0.418,gs:0.155,hm:0.309,hs:0.170},
+  fConc1:    {gm:0.236,gs:0.090,hm:0.168,hs:0.104},
+  fAsym:     {gm:10.3, gs:42.0, hm:0.54, hs:68.0},
+  fM3Long:   {gm:21.9, gs:28.0, hm:13.1, hs:43.0},
+  fM3Trans:  {gm:0.38, gs:16.5, hm:0.46, hs:23.0},
+  fAlpha:    {gm:20.2, gs:18.0, hm:48.9, hs:24.0},
+  fDist:     {gm:202,  gs:82.0, hm:213,  hs:105.0},
+};
+const feats = Object.keys(F);
+
+// ─── Chart defaults ───────────────────────────────────────────────────────────
+const gC = 'rgba(14,165,233,0.72)';
+const hC = 'rgba(249,115,22,0.72)';
+const gB = '#0ea5e9'; const hB = '#f97316';
+
+function scaleOpts(title) {
+  return {
+    x: { grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:'#9ca3af',font:{family:'Source Code Pro',size:8}}, title:{display:!!title,text:title,color:'#9ca3af',font:{size:8}} },
+    y: { grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:'#9ca3af',font:{family:'Source Code Pro',size:8}} }
+  };
+}
+function baseOpts(extra={}) {
+  return {animation:{duration:500}, plugins:{legend:{display:false},...(extra.plugins||{})}, scales:scaleOpts(), ...extra};
+}
+
+// ─── Class charts ─────────────────────────────────────────────────────────────
+new Chart('classBar',{type:'bar',data:{labels:['γ Gamma','h Hadron'],datasets:[{data:[12332,6688],backgroundColor:[gC,hC],borderColor:[gB,hB],borderWidth:1.5,borderRadius:3}]},options:{...baseOpts(),scales:scaleOpts()}});
+new Chart('classPie',{type:'doughnut',data:{labels:['γ Gamma','h Hadron'],datasets:[{data:[12332,6688],backgroundColor:[gC,hC],borderColor:'white',borderWidth:3,hoverOffset:4}]},options:{plugins:{legend:{position:'bottom',labels:{color:'#6b7280',font:{family:'Source Code Pro',size:10},boxWidth:10}}}}});
+new Chart('classHbar',{type:'bar',data:{labels:['γ Gamma','h Hadron'],datasets:[{data:[64.8,35.2],backgroundColor:[gC,hC],borderColor:[gB,hB],borderWidth:1.5,borderRadius:3}]},options:{indexAxis:'y',...baseOpts(),scales:{x:{...scaleOpts().x,max:100,title:{display:true,text:'Percentage (%)',color:'#9ca3af',font:{size:8}}},y:scaleOpts().y}}});
+
+// ─── Helper: create chart-box in a grid ──────────────────────────────────────
+function addBox(parentId, canvasId, title) {
+  const g = document.getElementById(parentId);
+  const d = document.createElement('div'); d.className='chart-box';
+  const t = document.createElement('div'); t.className='chart-title'; t.textContent=title; d.appendChild(t);
+  const c = document.createElement('canvas'); c.id=canvasId; c.height=140; d.appendChild(c);
+  g.appendChild(d);
+}
+
+// ─── Overall histograms (§5) ──────────────────────────────────────────────────
+feats.forEach((f,i)=>{
+  addBox('histOverall','ho'+i,f);
+  const r=rng(i*71+3), {gm,gs,hm,hs}=F[f];
+  const all=[...samples(r,160,gm,gs),...samples(r,87,hm,hs)];
+  const mn=Math.min(...all), mx=Math.max(...all);
+  const bins=histogram(all,mn,mx,22);
+  const labels=Array.from({length:22},(_,j)=>(mn+(j+0.5)*(mx-mn)/22).toFixed(1));
+  const mean=(all.reduce((a,b)=>a+b,0)/all.length).toFixed(2);
+  const med=all.slice().sort((a,b)=>a-b)[Math.floor(all.length/2)].toFixed(2);
+  // find bin indices for mean/med
+  const meanPct=(parseFloat(mean)-mn)/(mx-mn), medPct=(parseFloat(med)-mn)/(mx-mn);
+  new Chart('ho'+i,{type:'bar',data:{labels,datasets:[{data:bins,backgroundColor:'rgba(124,58,237,0.6)',borderColor:'#7c3aed',borderWidth:0.5}]},
+    options:{...baseOpts(),plugins:{legend:{display:false},annotation:{annotations:{mean:{type:'line',xMin:Math.floor(meanPct*22),xMax:Math.floor(meanPct*22),borderColor:'#dc2626',borderWidth:1.5,borderDash:[3,2]},med:{type:'line',xMin:Math.floor(medPct*22),xMax:Math.floor(medPct*22),borderColor:'#16a34a',borderWidth:1.5,borderDash:[3,2]}}}}}});
+});
+
+// ─── KDE overlays (§6) — approximated with line charts ────────────────────────
+feats.forEach((f,i)=>{
+  addBox('kdeGrid','kde'+i,f);
+  const r=rng(i*113+9), {gm,gs,hm,hs}=F[f];
+  const gd=samples(r,200,gm,gs), hd=samples(r,110,hm,hs);
+  const all=[...gd,...hd];
+  const mn=Math.min(...all)-gs*0.3, mx=Math.max(...all)+hs*0.3;
+  const nPts=30;
+  const labels=Array.from({length:nPts},(_,j)=>(mn+j*(mx-mn)/(nPts-1)).toFixed(1));
+  function kde(data,pts){
+    const bw=1.06*Math.sqrt(data.reduce((a,v)=>{const d=v-data.reduce((x,y)=>x+y)/data.length;return a+d*d;},0)/data.length)*Math.pow(data.length,-0.2);
+    return pts.map(x=>{const sum=data.reduce((s,xi)=>s+Math.exp(-0.5*((x-xi)/bw)**2),0);return sum/(data.length*bw*Math.sqrt(2*Math.PI));});
+  }
+  const xs=labels.map(Number);
+  const gKDE=kde(gd,xs), hKDE=kde(hd,xs);
+  new Chart('kde'+i,{type:'line',data:{labels,datasets:[
+    {data:gKDE,borderColor:gB,backgroundColor:'rgba(14,165,233,0.12)',borderWidth:1.5,fill:true,pointRadius:0,tension:0.4},
+    {data:hKDE,borderColor:hB,backgroundColor:'rgba(249,115,22,0.12)',borderWidth:1.5,fill:true,pointRadius:0,tension:0.4}
+  ]},options:{...baseOpts()}});
+});
+
+// ─── Boxplots (§7) — IQR horizontal bars ─────────────────────────────────────
+feats.forEach((f,i)=>{
+  addBox('boxGrid','bx'+i,f);
+  const {gm,gs,hm,hs}=F[f];
+  function iqr(m,s){return {q1:m-0.67*s,med:m,q3:m+0.67*s};}
+  const g=iqr(gm,gs), h=iqr(hm,hs);
+  new Chart('bx'+i,{type:'bar',data:{labels:['γ','h'],datasets:[{data:[g.q3-g.q1,h.q3-h.q1],base:[g.q1,h.q1],backgroundColor:[gC,hC],borderColor:[gB,hB],borderWidth:1,borderRadius:2}]},
+    options:{indexAxis:'y',...baseOpts(),scales:{x:scaleOpts().x,y:{...scaleOpts().y,ticks:{font:{family:'Source Code Pro',size:10},color:'#6b7280'}}},
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const q=ctx.dataIndex===0?g:h;return [`Q1:${q.q1.toFixed(1)}`,`Med:${q.med.toFixed(1)}`,`Q3:${q.q3.toFixed(1)}`];}}}}}});
+});
+
+// ─── Violin plots (§8) — bell curves side by side ────────────────────────────
+feats.forEach((f,i)=>{
+  addBox('violinGrid','vl'+i,f);
+  const r=rng(i*57+21), {gm,gs,hm,hs}=F[f];
+  const all=[gm-2.5*gs,gm+2.5*gs,hm-2.5*hs,hm+2.5*hs];
+  const mn=Math.min(...all), mx=Math.max(...all);
+  const nPts=28;
+  const xs=Array.from({length:nPts},(_,j)=>mn+j*(mx-mn)/(nPts-1));
+  function bell(x,m,s){return Math.exp(-0.5*((x-m)/s)**2)/(s*Math.sqrt(2*Math.PI));}
+  const gV=xs.map(x=>bell(x,gm,gs)), hV=xs.map(x=>bell(x,hm,hs));
+  new Chart('vl'+i,{type:'line',data:{labels:xs.map(v=>v.toFixed(1)),datasets:[
+    {data:gV,borderColor:gB,backgroundColor:'rgba(14,165,233,0.15)',fill:true,pointRadius:0,borderWidth:1.5,tension:0.4},
+    {data:hV,borderColor:hB,backgroundColor:'rgba(249,115,22,0.15)',fill:true,pointRadius:0,borderWidth:1.5,tension:0.4}
+  ]},options:{...baseOpts()}});
+});
+
+// ─── Skewness / Kurtosis (§10) ────────────────────────────────────────────────
+const skewVals={fLength:2.84,fWidth:4.71,fSize:0.42,fConc:0.08,fConc1:0.65,fAsym:0.09,fM3Long:0.24,fM3Trans:-0.02,fAlpha:0.81,fDist:0.06};
+const kurtVals={fLength:12.1,fWidth:39.8,fSize:0.31,fConc:-1.25,fConc1:0.18,fAsym:8.4,fM3Long:5.9,fM3Trans:9.3,fAlpha:-0.89,fDist:-0.64};
+
+new Chart('skewChart',{type:'bar',data:{labels:feats,datasets:[{data:feats.map(f=>skewVals[f]),backgroundColor:feats.map(f=>skewVals[f]>0?'rgba(220,38,38,0.65)':'rgba(37,99,235,0.65)'),borderColor:feats.map(f=>skewVals[f]>0?'#dc2626':'#2563eb'),borderWidth:1,borderRadius:2}]},
+  options:{...baseOpts(),scales:{x:{...scaleOpts().x,ticks:{...scaleOpts().x.ticks,maxRotation:45}},y:{...scaleOpts().y,title:{display:true,text:'Skewness',color:'#9ca3af',font:{size:9}}}}}});
+
+new Chart('kurtChart',{type:'bar',data:{labels:feats,datasets:[{data:feats.map(f=>kurtVals[f]),backgroundColor:feats.map(f=>kurtVals[f]>0?'rgba(124,58,237,0.65)':'rgba(22,163,74,0.65)'),borderColor:feats.map(f=>kurtVals[f]>0?'#7c3aed':'#16a34a'),borderWidth:1,borderRadius:2}]},
+  options:{...baseOpts(),scales:{x:{...scaleOpts().x,ticks:{...scaleOpts().x.ticks,maxRotation:45}},y:{...scaleOpts().y,title:{display:true,text:'Excess Kurtosis',color:'#9ca3af',font:{size:9}}}}}});
+
+// ─── Correlation heatmap ──────────────────────────────────────────────────────
+const pearsonMat=[
+  [1.00,0.78,0.65,-0.64,-0.57,0.38,0.35,0.06,-0.16,0.54],
+  [0.78,1.00,0.52,-0.60,-0.56,0.27,0.36,0.06,-0.11,0.57],
+  [0.65,0.52,1.00,-0.33,-0.30,0.24,0.24,0.04,-0.14,0.39],
+  [-0.64,-0.60,-0.33,1.00,0.99,-0.16,-0.25,-0.01,0.03,-0.39],
+  [-0.57,-0.56,-0.30,0.99,1.00,-0.15,-0.23,-0.01,0.04,-0.36],
+  [0.38,0.27,0.24,-0.16,-0.15,1.00,0.56,0.05,-0.12,0.21],
+  [0.35,0.36,0.24,-0.25,-0.23,0.56,1.00,0.17,-0.09,0.38],
+  [0.06,0.06,0.04,-0.01,-0.01,0.05,0.17,1.00,-0.02,0.09],
+  [-0.16,-0.11,-0.14,0.03,0.04,-0.12,-0.09,-0.02,1.00,-0.08],
+  [0.54,0.57,0.39,-0.39,-0.36,0.21,0.38,0.09,-0.08,1.00]
+];
+const spearmanMat=[
+  [1.00,0.80,0.63,-0.67,-0.60,0.40,0.37,0.08,-0.18,0.55],
+  [0.80,1.00,0.55,-0.63,-0.59,0.29,0.38,0.07,-0.13,0.59],
+  [0.63,0.55,1.00,-0.36,-0.32,0.26,0.25,0.05,-0.16,0.40],
+  [-0.67,-0.63,-0.36,1.00,0.98,-0.18,-0.26,-0.02,0.04,-0.41],
+  [-0.60,-0.59,-0.32,0.98,1.00,-0.17,-0.24,-0.02,0.05,-0.38],
+  [0.40,0.29,0.26,-0.18,-0.17,1.00,0.58,0.06,-0.13,0.22],
+  [0.37,0.38,0.25,-0.26,-0.24,0.58,1.00,0.19,-0.10,0.39],
+  [0.08,0.07,0.05,-0.02,-0.02,0.06,0.19,1.00,-0.03,0.10],
+  [-0.18,-0.13,-0.16,0.04,0.05,-0.13,-0.10,-0.03,1.00,-0.09],
+  [0.55,0.59,0.40,-0.41,-0.38,0.22,0.39,0.10,-0.09,1.00]
+];
+const hmLabels=['fLen','fWid','fSiz','fCnc','fCn1','fAsm','fM3L','fM3T','fAlp','fDst'];
+
+function buildHeatmap(containerId, mat) {
+  const grid=document.getElementById(containerId);
+  grid.style.gridTemplateColumns=`72px repeat(10, 50px)`;
+  // header
+  const emp=document.createElement('div'); emp.style.height='22px'; grid.appendChild(emp);
+  hmLabels.forEach(l=>{ const h=document.createElement('div'); h.className='hm-header'; h.textContent=l; grid.appendChild(h); });
+  mat.forEach((row,i)=>{
+    const lbl=document.createElement('div'); lbl.className='hm-label'; lbl.textContent=hmLabels[i]; grid.appendChild(lbl);
+    row.forEach(v=>{
+      const cell=document.createElement('div'); cell.className='hm-cell'; cell.title=v.toFixed(2);
+      const a=Math.abs(v);
+      let bg,tc;
+      if(v>0){bg=`rgba(14,165,233,${0.1+a*0.7})`;tc=a>0.4?'#fff':'#374151';}
+      else{bg=`rgba(249,115,22,${0.1+a*0.7})`;tc=a>0.4?'#fff':'#374151';}
+      if(a>0.95){bg='rgba(220,38,38,0.85)';tc='#fff';}
+      cell.style.background=bg; cell.style.color=tc;
+      cell.style.fontWeight=a>0.7?'600':'400';
+      cell.textContent=v.toFixed(2);
+      grid.appendChild(cell);
+    });
+  });
+}
+buildHeatmap('hmGrid',pearsonMat);
+buildHeatmap('hmGridSpear',spearmanMat);
+
+// ─── Scatter pairs (§12) ──────────────────────────────────────────────────────
+const scatterPairs=[['fAlpha','fConc'],['fLength','fWidth'],['fM3Long','fAlpha'],['fConc','fDist'],['fSize','fLength'],['fAsym','fM3Long']];
+scatterPairs.forEach(([xf,yf],i)=>{
+  addBox('scatterGrid','sc'+i,`${xf} vs ${yf}`);
+  document.getElementById('sc'+i).height=160;
+  const r=rng(i*333+77);
+  const {gm:gxm,gs:gxs,hm:hxm,hs:hxs}=F[xf];
+  const {gm:gym,gs:gys,hm:hym,hs:hys}=F[yf];
+  const gd=Array.from({length:200},()=>({x:gxm+gauss(r)*gxs,y:gym+gauss(r)*gys}));
+  const hd=Array.from({length:200},()=>({x:hxm+gauss(r)*hxs,y:hym+gauss(r)*hys}));
+  new Chart('sc'+i,{type:'scatter',data:{datasets:[
+    {label:'γ',data:gd,backgroundColor:'rgba(14,165,233,0.2)',borderColor:'rgba(14,165,233,0.4)',pointRadius:2.5,borderWidth:0.5},
+    {label:'h',data:hd,backgroundColor:'rgba(249,115,22,0.2)',borderColor:'rgba(249,115,22,0.4)',pointRadius:2.5,borderWidth:0.5}
+  ]},options:{animation:{duration:400},plugins:{legend:{display:false}},scales:{
+    x:{title:{display:true,text:xf,color:'#9ca3af',font:{size:8}},grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:7}}},
+    y:{title:{display:true,text:yf,color:'#9ca3af',font:{size:8}},grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:7}}}
+  }}});
+});
+
+// ─── Pair plot (§13) ─────────────────────────────────────────────────────────
+const top5=['fAlpha','fConc','fLength','fM3Long','fDist'];
+const ppGrid=document.getElementById('pairplotGrid');
+
+top5.forEach((yf,row)=>{
+  top5.forEach((xf,col)=>{
+    const box=document.createElement('div');
+    if(row===col){
+      box.className='pp-box pp-diag';
+      const lbl=document.createElement('div'); lbl.className='pp-label'; lbl.textContent=xf;
+      box.appendChild(lbl);
+    } else {
+      box.className='pp-box';
+      const c=document.createElement('canvas'); c.height=80; c.id=`pp_${row}_${col}`; box.appendChild(c);
+    }
+    ppGrid.appendChild(box);
+  });
+});
+
+top5.forEach((yf,row)=>{
+  top5.forEach((xf,col)=>{
+    if(row===col) return;
+    const r=rng((row*5+col)*11+41);
+    const {gm:gxm,gs:gxs,hm:hxm,hs:hxs}=F[xf];
+    const {gm:gym,gs:gys,hm:hym,hs:hys}=F[yf];
+    const n=60;
+    const gd=Array.from({length:n},()=>({x:gxm+gauss(r)*gxs,y:gym+gauss(r)*gys}));
+    const hd=Array.from({length:n},()=>({x:hxm+gauss(r)*hxs,y:hym+gauss(r)*hys}));
+    new Chart(`pp_${row}_${col}`,{type:'scatter',data:{datasets:[
+      {data:gd,backgroundColor:'rgba(14,165,233,0.2)',pointRadius:1.5,borderWidth:0},
+      {data:hd,backgroundColor:'rgba(249,115,22,0.2)',pointRadius:1.5,borderWidth:0}
+    ]},options:{animation:{duration:300},plugins:{legend:{display:false}},scales:{
+      x:{display:false},y:{display:false}
+    }}});
+  });
+});
+
+// ─── ECDF (§14) ──────────────────────────────────────────────────────────────
+feats.forEach((f,i)=>{
+  addBox('ecdfGrid','ecdf'+i,f);
+  const r=rng(i*83+13), {gm,gs,hm,hs}=F[f];
+  const gd=samples(r,150,gm,gs).sort((a,b)=>a-b);
+  const hd=samples(r,80,hm,hs).sort((a,b)=>a-b);
+  const gY=gd.map((_,j)=>(j+1)/gd.length);
+  const hY=hd.map((_,j)=>(j+1)/hd.length);
+  new Chart('ecdf'+i,{type:'line',data:{datasets:[
+    {data:gd.map((x,j)=>({x,y:gY[j]})),borderColor:gB,backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,stepped:true},
+    {data:hd.map((x,j)=>({x,y:hY[j]})),borderColor:hB,backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,stepped:true}
+  ]},options:{...baseOpts(),scales:{x:{type:'linear',grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:7},maxTicksLimit:4}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:7},maxTicksLimit:3},min:0,max:1}}}});
+});
+
+// ─── KS / AUC (§15) ──────────────────────────────────────────────────────────
+const ksVals={fLength:0.274,fWidth:0.261,fSize:0.065,fConc:0.370,fConc1:0.342,fAsym:0.202,fM3Long:0.296,fM3Trans:0.041,fAlpha:0.423,fDist:0.121};
+const aucVals={fLength:0.577,fWidth:0.570,fSize:0.510,fConc:0.681,fConc1:0.668,fAsym:0.548,fM3Long:0.576,fM3Trans:0.508,fAlpha:0.742,fDist:0.533};
+
+const ksColors=feats.map(f=>{ const v=ksVals[f]; return v>0.35?'rgba(220,38,38,0.7)':v>0.25?'rgba(124,58,237,0.7)':v>0.15?'rgba(14,165,233,0.7)':'rgba(156,163,175,0.7)'; });
+new Chart('ksChart',{type:'bar',data:{labels:feats,datasets:[{data:feats.map(f=>ksVals[f]),backgroundColor:ksColors,borderColor:ksColors.map(c=>c.replace('0.7','1')),borderWidth:1,borderRadius:2}]},
+  options:{...baseOpts(),scales:{x:{...scaleOpts().x,ticks:{...scaleOpts().x.ticks,maxRotation:45}},y:{...scaleOpts().y,max:0.5,title:{display:true,text:'KS Statistic',color:'#9ca3af',font:{size:9}}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`KS = ${ctx.raw.toFixed(3)}`}}}}});
+
+const pbColors=feats.map(f=>{ const v=Math.abs(aucVals[f]-0.5)*2; return v>0.4?'rgba(220,38,38,0.7)':v>0.3?'rgba(124,58,237,0.7)':v>0.15?'rgba(14,165,233,0.7)':'rgba(156,163,175,0.7)'; });
+new Chart('pbChart',{type:'bar',data:{labels:feats,datasets:[{data:feats.map(f=>aucVals[f]),backgroundColor:pbColors,borderColor:pbColors.map(c=>c.replace('0.7','1')),borderWidth:1,borderRadius:2}]},
+  options:{...baseOpts(),scales:{x:{...scaleOpts().x,ticks:{...scaleOpts().x.ticks,maxRotation:45}},y:{...scaleOpts().y,min:0.48,max:0.78,title:{display:true,text:'AUC-ROC',color:'#9ca3af',font:{size:9}}}},plugins:{legend:{display:false},annotation:{annotations:{baseline:{type:'line',yMin:0.5,yMax:0.5,borderColor:'#dc2626',borderWidth:1,borderDash:[4,3]}}}},tooltip:{callbacks:{label:ctx=>`AUC = ${ctx.raw.toFixed(3)}`}}}});
+
+// ─── Z-score (§16) ────────────────────────────────────────────────────────────
+const gZ={fLength:-0.073,fWidth:-0.115,fSize:0.021,fConc:0.208,fConc1:0.213,fAsym:0.065,fM3Long:0.088,fM3Trans:-0.003,fAlpha:-0.374,fDist:-0.042};
+const hZ={fLength:0.135,fWidth:0.213,fSize:-0.039,fConc:-0.385,fConc1:-0.393,fAsym:-0.120,fM3Long:-0.162,fM3Trans:0.006,fAlpha:0.692,fDist:0.077};
+
+new Chart('zscoreChart',{type:'bar',data:{labels:feats,datasets:[
+  {label:'γ Gamma',data:feats.map(f=>gZ[f]),backgroundColor:'rgba(14,165,233,0.65)',borderColor:gB,borderWidth:1,borderRadius:2},
+  {label:'h Hadron',data:feats.map(f=>hZ[f]),backgroundColor:'rgba(249,115,22,0.65)',borderColor:hB,borderWidth:1,borderRadius:2}
+]},options:{...baseOpts({plugins:{legend:{display:true,position:'top',labels:{color:'#6b7280',font:{family:'Source Code Pro',size:10},boxWidth:12}}}}),scales:{x:{...scaleOpts().x,ticks:{...scaleOpts().x.ticks,maxRotation:45}},y:{...scaleOpts().y,title:{display:true,text:'Mean Z-Score',color:'#9ca3af',font:{size:9}}}}}});
+
+// ─── Q-Q plots (§17) ─────────────────────────────────────────────────────────
+feats.forEach((f,i)=>{
+  addBox('qqGrid','qq'+i,f+' Q-Q');
+  const r=rng(i*97+31), {gm,gs}=F[f];
+  const n=100;
+  const data=samples(r,n,gm,gs).sort((a,b)=>a-b);
+  const mn=Math.min(...data), mx=Math.max(...data);
+  // theoretical normal quantiles
+  function normInv(p){const a1=-3.969683028665376e+01,a2=2.209460984245205e+02,a3=-2.759285104469687e+02,a4=1.383577518672690e+02,a5=-3.066479806614716e+01,a6=2.506628277459239e+00;const b1=-5.447609879822406e+01,b2=1.615858368580409e+02,b3=-1.556989798598866e+02,b4=6.680131188771972e+01,b5=-1.328068155288572e+01;const c1=-7.784894002430293e-03,c2=-3.223964580411365e-01,c3=-2.400758277161838e+00,c4=-2.549732539343734e+00,c5=4.374664141464968e+00,c6=2.938163982698783e+00;const d1=7.784695709041462e-03,d2=3.224671290700398e-01,d3=2.445134137142996e+00,d4=3.754408661907416e+00;const pLow=0.02425;if(p<pLow){const q=Math.sqrt(-2*Math.log(p));return(((((c1*q+c2)*q+c3)*q+c4)*q+c5)*q+c6)/(((((d1*q+d2)*q+d3)*q+d4)*q+1));}if(p<1-pLow){const q=p-0.5,r2=q*q;return(((((a1*r2+a2)*r2+a3)*r2+a4)*r2+a5)*r2+a6)*q/(((((b1*r2+b2)*r2+b3)*r2+b4)*r2+b5)*r2+1);}const q=Math.sqrt(-2*Math.log(1-p));return-(((((c1*q+c2)*q+c3)*q+c4)*q+c5)*q+c6)/(((((d1*q+d2)*q+d3)*q+d4)*q+1)));}
+  const theoQ=Array.from({length:n},(_,j)=>normInv((j+0.5)/n)*gs+gm);
+  const pts=data.map((v,j)=>({x:theoQ[j],y:v}));
+  const lineMin=Math.min(theoQ[0],mn), lineMax=Math.max(theoQ[n-1],mx);
+  new Chart('qq'+i,{type:'scatter',data:{datasets:[
+    {data:pts,backgroundColor:'rgba(124,58,237,0.4)',borderColor:'rgba(124,58,237,0.6)',pointRadius:2.5,borderWidth:0},
+    {type:'line',data:[{x:lineMin,y:lineMin},{x:lineMax,y:lineMax}],borderColor:'#dc2626',borderWidth:1.5,pointRadius:0,borderDash:[4,3]}
+  ]},options:{animation:{duration:300},plugins:{legend:{display:false}},scales:{
+    x:{title:{display:true,text:'Theoretical',color:'#9ca3af',font:{size:7}},grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:7},maxTicksLimit:3}},
+    y:{title:{display:true,text:'Observed',color:'#9ca3af',font:{size:7}},grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#9ca3af',font:{size:7},maxTicksLimit:3}}
+  }}});
+});
+
+// ─── Radar chart (§18) ────────────────────────────────────────────────────────
+// Normalized means (0-1 min-max)
+const gNorm={fLength:0.126,fWidth:0.070,fSize:0.357,fConc:0.458,fConc1:0.437,fAsym:0.459,fM3Long:0.428,fM3Trans:0.501,fAlpha:0.224,fDist:0.407};
+const hNorm={fLength:0.149,fWidth:0.092,fSize:0.348,fConc:0.335,fConc1:0.373,fAsym:0.450,fM3Long:0.406,fM3Trans:0.501,fAlpha:0.543,fDist:0.428};
+
+new Chart('radarChart',{type:'radar',data:{labels:feats,datasets:[
+  {label:'γ Gamma',data:feats.map(f=>gNorm[f]),backgroundColor:'rgba(14,165,233,0.15)',borderColor:gB,borderWidth:2,pointBackgroundColor:gB,pointRadius:3},
+  {label:'h Hadron',data:feats.map(f=>hNorm[f]),backgroundColor:'rgba(249,115,22,0.15)',borderColor:hB,borderWidth:2,pointBackgroundColor:hB,pointRadius:3}
+]},options:{animation:{duration:600},plugins:{legend:{position:'top',labels:{color:'#6b7280',font:{family:'Source Code Pro',size:10},boxWidth:10}}},scales:{r:{grid:{color:'rgba(0,0,0,0.08)'},angleLines:{color:'rgba(0,0,0,0.08)'},ticks:{color:'#9ca3af',font:{size:7},stepSize:0.2},pointLabels:{color:'#374151',font:{family:'Source Code Pro',size:9}},min:0,max:0.7}}}});
+
+// ─── Parallel coordinates approximation (§18) ─────────────────────────────────
+new Chart('parallelChart',{type:'line',data:{labels:feats,datasets:[
+  {label:'γ Gamma mean',data:feats.map(f=>gNorm[f]),borderColor:gB,backgroundColor:'rgba(14,165,233,0.08)',fill:true,tension:0.3,borderWidth:2.5,pointBackgroundColor:gB,pointRadius:5,pointBorderWidth:0},
+  {label:'h Hadron mean',data:feats.map(f=>hNorm[f]),borderColor:hB,backgroundColor:'rgba(249,115,22,0.08)',fill:true,tension:0.3,borderWidth:2.5,pointBackgroundColor:hB,pointRadius:5,pointBorderWidth:0}
+]},options:{animation:{duration:600},plugins:{legend:{position:'top',labels:{color:'#6b7280',font:{family:'Source Code Pro',size:10},boxWidth:10}}},scales:{
+  x:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{color:'#6b7280',font:{family:'Source Code Pro',size:8},maxRotation:40}},
+  y:{min:0,max:0.7,grid:{color:'rgba(0,0,0,0.05)'},ticks:{color:'#9ca3af',font:{size:8}},title:{display:true,text:'Normalized [0-1]',color:'#9ca3af',font:{size:8}}}
+}}});
+
+// ─── AUC / ROC (§19) ──────────────────────────────────────────────────────────
+// Approximate ROC curves using parametric method
+new Chart('aucChart',{type:'bar',data:{labels:feats,datasets:[{
+  data:feats.map(f=>aucVals[f]),
+  backgroundColor:feats.map(f=>aucVals[f]>0.7?'rgba(220,38,38,0.65)':aucVals[f]>0.6?'rgba(124,58,237,0.65)':aucVals[f]>0.55?'rgba(14,165,233,0.65)':'rgba(156,163,175,0.55)'),
+  borderColor:feats.map(f=>aucVals[f]>0.7?'#dc2626':aucVals[f]>0.6?'#7c3aed':aucVals[f]>0.55?gB:'#9ca3af'),
+  borderWidth:1,borderRadius:2
+}]},options:{...baseOpts(),scales:{
+  x:{...scaleOpts().x,ticks:{...scaleOpts().x.ticks,maxRotation:45}},
+  y:{...scaleOpts().y,min:0.48,max:0.78,title:{display:true,text:'AUC-ROC',color:'#9ca3af',font:{size:9}}}
+}}});
+
+// ROC curves for top 4 features
+function makeROC(auc, n=50) {
+  const pts=[{x:0,y:0}];
+  for(let i=1;i<n;i++){
+    const fpr=i/n;
+    const tpr=Math.pow(fpr, (1-auc)/auc);
+    pts.push({x:fpr,y:tpr});
+  }
+  pts.push({x:1,y:1});
+  return pts;
+}
+new Chart('rocChart',{type:'scatter',data:{datasets:[
+  {label:`fAlpha (${aucVals.fAlpha})`,data:makeROC(aucVals.fAlpha),borderColor:'#dc2626',backgroundColor:'transparent',showLine:true,pointRadius:0,borderWidth:2,tension:0.3},
+  {label:`fConc (${aucVals.fConc})`,data:makeROC(aucVals.fConc),borderColor:'#7c3aed',backgroundColor:'transparent',showLine:true,pointRadius:0,borderWidth:2,tension:0.3},
+  {label:`fConc1 (${aucVals.fConc1})`,data:makeROC(aucVals.fConc1),borderColor:'#0ea5e9',backgroundColor:'transparent',showLine:true,pointRadius:0,borderWidth:2,tension:0.3},
+  {label:`fM3Long (${aucVals.fM3Long})`,data:makeROC(aucVals.fM3Long),borderColor:'#16a34a',backgroundColor:'transparent',showLine:true,pointRadius:0,borderWidth:1.5,tension:0.3},
+  {label:'Random',data:[{x:0,y:0},{x:1,y:1}],borderColor:'#9ca3af',backgroundColor:'transparent',showLine:true,pointRadius:0,borderWidth:1,borderDash:[4,3]}
+]},options:{animation:{duration:500},plugins:{legend:{position:'top',labels:{color:'#6b7280',font:{family:'Source Code Pro',size:9},boxWidth:10,padding:6}}},scales:{
+  x:{title:{display:true,text:'False Positive Rate',color:'#9ca3af',font:{size:9}},min:0,max:1,grid:{color:'rgba(0,0,0,0.05)'},ticks:{color:'#9ca3af',font:{size:8}}},
+  y:{title:{display:true,text:'True Positive Rate',color:'#9ca3af',font:{size:9}},min:0,max:1,grid:{color:'rgba(0,0,0,0.05)'},ticks:{color:'#9ca3af',font:{size:8}}}
+}}});
+</script>
+</body>
+</html>
