@@ -8,3 +8,5 @@ Machine Learning for Physics and Astronomy Fall 2025 at Clemson University.
 - [Conformal Prediction — Regression](https://srinadh99.github.io/ASTR-8750-Clemson-University/conformal_regression.html)
 - [Conformal Prediction — Classification](https://srinadh99.github.io/ASTR-8750-Clemson-University/conformal_classification.html)
 
+- [Exploratory Data Analysis — EDA](https://srinadh99.github.io/ASTR-8750-Clemson-University/MAGIC_EDA_Notebook_classification.html)
+
