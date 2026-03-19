@@ -1,7 +1,7 @@
 # ASTR-8750
 Machine Learning for Physics and Astronomy Fall 2025 at Clemson University.
 
-#### Complete course materials and notebooks will be soon!
+#### Complete course materials and notebooks (updating) will be shared soon!
 
 ## 1. Programming
 
